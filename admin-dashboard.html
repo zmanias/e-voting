@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Realtime Admin</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ========================
+           RESET & GLOBAL STYLE
+           ======================== */
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #eef2f5;
+            margin: 0; padding: 20px;
+            color: #333;
+        }
+        
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        /* ========================
+           HEADER & NAVIGASI
+           ======================== */
+        .dashboard-header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: white; padding: 20px 30px; border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 30px;
+            flex-wrap: wrap; gap: 15px;
+        }
+        
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .brand h1 { margin: 0; font-size: 1.5rem; color: #2c3e50; }
+        .brand-icon { font-size: 1.8rem; }
+
+        .nav-actions { display: flex; gap: 10px; }
+        
+        .btn {
+            padding: 10px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem;
+            text-decoration: none; transition: 0.3s; border: none; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        
+        .btn-link { background: #e3f2fd; color: #1976d2; }
+        .btn-link:hover { background: #bbdefb; }
+        
+        .btn-logout { background: #ffebee; color: #c62828; }
+        .btn-logout:hover { background: #ffcdd2; }
+
+        /* ========================
+           STATS CARDS (GRID)
+           ======================== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px; margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white; padding: 25px; border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: center;
+            transition: transform 0.3s; border-bottom: 4px solid transparent;
+        }
+        .stat-card:hover { transform: translateY(-5px); }
+
+        .stat-card h3 { margin: 0; color: #7f8c8d; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card .number { font-size: 2.5rem; font-weight: 700; margin: 10px 0 0; }
+        
+        /* Warna Spesifik Kartu */
+        .stat-card.blue { border-color: #3498db; }
+        .stat-card.blue .number { color: #3498db; }
+        
+        .stat-card.green { border-color: #2ecc71; }
+        .stat-card.green .number { color: #2ecc71; }
+        
+        .stat-card.red { border-color: #e74c3c; }
+        .stat-card.red .number { color: #e74c3c; }
+
+        /* ========================
+           SECTIONS (GRAFIK & TABEL)
+           ======================== */
+        .section-card {
+            background: white; padding: 30px; border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 30px;
+        }
+        .section-title {
+            margin-top: 0; margin-bottom: 20px; font-size: 1.2rem; color: #2c3e50;
+            border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* Progress Bars */
+        .candidate-item { margin-bottom: 15px; }
+        .candidate-info { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: 600; color: #555; }
+        .progress-bg { background: #eee; height: 24px; border-radius: 12px; overflow: hidden; }
+        .progress-bar {
+            height: 100%; color: white; text-align: right; padding-right: 10px;
+            line-height: 24px; font-size: 0.8rem; font-weight: bold;
+            width: 0%; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Tabel */
+        .table-wrapper { overflow-x: auto; border-radius: 10px; border: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        
+        thead { background: #2c3e50; color: white; }
+        th, td { padding: 15px; text-align: left; font-size: 0.9rem; }
+        tr:nth-child(even) { background: #f8f9fa; }
+        tr:hover { background: #f1f2f6; }
+        
+        .badge-pill {
+            display: inline-block; padding: 4px 12px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: bold;
+        }
+        .badge-vote { background: #e3f2fd; color: #1976d2; }
+
+        /* Tombol Reset */
+        .btn-reset {
+            width: 100%; padding: 15px; background: #ffebee; color: #c62828;
+            border: 2px dashed #ef9a9a; border-radius: 10px; font-weight: bold;
+            cursor: pointer; transition: 0.3s;
+        }
+        .btn-reset:hover { background: #c62828; color: white; border-color: #c62828; }
+
+        /* Responsive Mobile */
+        @media (max-width: 768px) {
+            .dashboard-header { flex-direction: column; text-align: center; }
+            .nav-actions { width: 100%; justify-content: center; }
+            .btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <header class="dashboard-header">
+            <div class="brand">
+                <span class="brand-icon">📊</span>
+                <div>
+                    <h1>Admin Dashboard</h1>
+                    <span style="font-size:0.9rem; color:#888;">Realtime Monitoring System</span>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <a href="whitelist.html" class="btn btn-link">📋 Kelola Data DPT</a>
+                <button onclick="logout()" class="btn btn-logout">🚪 Keluar</button>
+            </div>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card blue">
+                <h3>Total Pemilih (DPT)</h3>
+                <div class="number" id="totalDPT">0</div>
+            </div>
+            <div class="stat-card green">
+                <h3>Suara Masuk</h3>
+                <div class="number" id="totalVoted">0</div>
+            </div>
+            <div class="stat-card red">
+                <h3>Belum Memilih (Golput)</h3>
+                <div class="number" id="totalGolput">0</div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-title">
+                <span>🏆 Perolehan Suara Sementara</span>
+            </div>
+            <div id="candidates-container">
+                <p style="text-align:center; color:#888;">Memuat data...</p>
+            </div>
+        </div>
+        
+        <div class="section-card">
+            <div class="section-title">
+                <span>📋 Log Aktivitas Pemilih (Open Vote)</span>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>NIM</th>
+                            <th>Nama Mahasiswa</th>
+                            <th>Kampus</th>
+                            <th>Jabatan</th>
+                            <th>Pilihan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logTable">
+                        <tr><td colspan="5" style="text-align:center; padding:20px;">Menunggu data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 50px;">
+            <button onclick="resetAllData()" class="btn-reset">⚠️ RESET DATABASE (HAPUS SEMUA DATA & MULAI DARI NOL)</button>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { listenToData } from './script.js';
+        
+        // Cek Login
+        if(window.checkSession) window.checkSession();
+
+        listenToData((nims, votes) => {
+            // 1. Update Statistik
+            const total = nims.length;
+            const votedCount = nims.filter(x => x.voted).length;
+            
+            animateValue("totalDPT", parseInt(document.getElementById('totalDPT').innerText), total, 1000);
+            animateValue("totalVoted", parseInt(document.getElementById('totalVoted').innerText), votedCount, 1000);
+            animateValue("totalGolput", parseInt(document.getElementById('totalGolput').innerText), total - votedCount, 1000);
+
+            // 2. Render Grafik
+            const container = document.getElementById('candidates-container');
+            let htmlGrafik = '';
+            let totalSuaraSah = 0;
+            
+            // Hitung total suara sah untuk persentase
+            for(let key in votes) { totalSuaraSah += votes[key].count; }
+
+            for (let i = 1; i <= 8; i++) {
+                let code = i < 10 ? "0" + i : "" + i;
+                let data = votes[code] || { count: 0, name: "No. Urut " + (i==1?"I":i==2?"II":i==3?"III":i==4?"IV":i==5?"V":i==6?"VI":i==7?"VII":"VIII") };
+                
+                let persentase = totalSuaraSah === 0 ? 0 : Math.round((data.count / totalSuaraSah) * 100);
+                
+                htmlGrafik += `
+                <div class="candidate-item">
+                    <div class="candidate-info">
+                        <span>${data.name}</span>
+                        <span>${data.count} Suara</span>
+                    </div>
+                    <div class="progress-bg">
+                        <div class="progress-bar" style="width:${persentase}%; background:${getColor(i)}">
+                            ${persentase}%
+                        </div>
+                    </div>
+                </div>`;
+            }
+            container.innerHTML = htmlGrafik;
+
+            // 3. Render Tabel Log
+            const tbody = document.getElementById('logTable');
+            const userVoted = nims.filter(u => u.voted);
+            
+            if(userVoted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#999;">Belum ada suara masuk.</td></tr>';
+            } else {
+                tbody.innerHTML = '';
+                userVoted.reverse().forEach(u => {
+                    let pill = u.pilihan && votes[u.pilihan] ? votes[u.pilihan].name : '-';
+                    let kampus = u.kampus || '-';
+                    let jabatan = u.jabatan || '-';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><b>${u.nim}</b></td>
+                            <td>${u.nama}</td>
+                            <td>${kampus}</td>
+                            <td>${jabatan}</td>
+                            <td><span class="badge-pill badge-vote">${pill}</span></td>
+                        </tr>`;
+                });
+            }
+        });
+
+        // Helper: Warna Grafik
+        function getColor(i) {
+            const colors = ["#3498db", "#e74c3c", "#f1c40f", "#2ecc71", "#9b59b6", "#34495e", "#e67e22", "#1abc9c"];
+            return colors[i-1] || "#333";
+        }
+
+        // Helper: Animasi Angka (Agar keren saat angka berubah)
+        function animateValue(id, start, end, duration) {
+            if (start === end) return;
+            const obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    obj.innerHTML = end;
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+    </script>
+</body>
+</html>

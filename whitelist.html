@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Data DPT</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ========================
+           GLOBAL STYLE
+           ======================== */
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #eef2f5;
+            margin: 0; padding: 20px;
+            color: #333;
+        }
+
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        /* HEADER */
+        .page-header {
+            background: white; padding: 20px 30px; border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 25px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 15px;
+        }
+        .header-title h2 { margin: 0; color: #2c3e50; font-size: 1.5rem; }
+        .header-title p { margin: 0; color: #888; font-size: 0.9rem; }
+
+        .btn-back {
+            text-decoration: none; color: #007bff; font-weight: 600;
+            display: inline-flex; align-items: center; gap: 5px;
+            background: #e3f2fd; padding: 10px 20px; border-radius: 50px;
+            transition: 0.3s;
+        }
+        .btn-back:hover { background: #bbdefb; }
+
+        /* CARD STYLE */
+        .card {
+            background: white; padding: 30px; border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 25px;
+        }
+
+        /* FORM INPUT GRID */
+        .form-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
+        }
+        .form-group { margin-bottom: 5px; }
+        
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; font-size: 0.9rem; }
+        
+        input, select {
+            width: 100%; padding: 12px 15px; border: 1px solid #ddd;
+            border-radius: 8px; font-size: 0.95rem; transition: 0.3s;
+            background: #f9f9f9; outline: none; font-family: 'Poppins', sans-serif;
+        }
+        input:focus, select:focus { border-color: #3282b8; background: white; box-shadow: 0 0 0 4px rgba(50, 130, 184, 0.1); }
+
+        .btn-add {
+            grid-column: span 2; width: 100%; padding: 14px;
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white; border: none; border-radius: 10px;
+            font-weight: bold; font-size: 1rem; cursor: pointer;
+            transition: 0.3s; margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+        }
+        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4); }
+        .btn-add:active { transform: translateY(0); }
+
+        /* TABLE STYLE */
+        .table-responsive { overflow-x: auto; border-radius: 10px; border: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        
+        thead { background: #2c3e50; color: white; }
+        th, td { padding: 15px; text-align: left; font-size: 0.9rem; border-bottom: 1px solid #eee; }
+        th { text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
+        tr:hover { background: #f8f9fa; }
+
+        .btn-del {
+            background: #ffebee; color: #c62828; border: none;
+            padding: 6px 15px; border-radius: 6px; font-weight: 600;
+            cursor: pointer; transition: 0.2s; font-size: 0.85rem;
+        }
+        .btn-del:hover { background: #c62828; color: white; }
+
+        /* ========================
+           MODAL POPUP STYLE
+           ======================== */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: 0.3s;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal-box {
+            background: white; padding: 30px; width: 90%; max-width: 400px;
+            border-radius: 15px; text-align: center;
+            transform: scale(0.8); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+
+        .modal-icon { font-size: 3rem; margin-bottom: 10px; }
+        .modal-title { font-size: 1.3rem; font-weight: bold; margin-bottom: 10px; color: #333; }
+        .modal-msg { font-size: 0.95rem; color: #666; margin-bottom: 25px; }
+        
+        .modal-actions { display: flex; gap: 10px; justify-content: center; }
+
+        .btn-modal {
+            flex: 1; padding: 12px; border-radius: 50px; border: none;
+            font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .btn-close { background: #e0e0e0; color: #333; }
+        .btn-close:hover { background: #d6d6d6; }
+        
+        .btn-confirm { background: #dc3545; color: white; }
+        .btn-confirm:hover { background: #c82333; }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .btn-add { grid-column: span 1; }
+            .page-header { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="modal-overlay" id="infoModal">
+        <div class="modal-box">
+            <div class="modal-icon" id="infoIcon">ℹ️</div>
+            <div class="modal-title" id="infoTitle">Informasi</div>
+            <div class="modal-msg" id="infoMsg">Pesan informasi.</div>
+            <button class="btn-modal btn-close" onclick="closeInfoModal()">Tutup</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-box">
+            <div class="modal-icon">🗑️</div>
+            <div class="modal-title">Hapus Data?</div>
+            <div class="modal-msg">Apakah Anda yakin ingin menghapus data pemilih ini? Tindakan ini tidak bisa dibatalkan.</div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-close" onclick="closeConfirmModal()">Batal</button>
+                <button class="btn-modal btn-confirm" id="btnConfirmDelete">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <div class="page-header">
+            <div class="header-title">
+                <h2>📋 Input Data Pemilih</h2>
+                <p>Tambah atau hapus Daftar Pemilih Tetap (DPT)</p>
+            </div>
+            <a href="admin-dashboard.html" class="btn-back">⬅ Kembali ke Dashboard</a>
+        </div>
+
+        <div class="card">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nomor Induk (NIM)</label>
+                    <input type="text" id="newNim" placeholder="Contoh: 2023001" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="newNama" placeholder="Nama Mahasiswa" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Asal Kampus PLJ</label>
+                    <select id="newKampus">
+                        <option value="" disabled selected>- Pilih Kampus -</option>
+                        <option value="Jakarta Pusat">Jakarta Pusat</option>
+                        <option value="Jakarta Utara">Jakarta Utara</option>
+                        <option value="Jakarta Selatan">Jakarta Selatan</option>
+                        <option value="Cikarang">Cikarang</option>
+                        <option value="Bekasi">Bekasi</option>
+                        <option value="Depok">Depok</option>
+                        <option value="Cimone">Cimone</option>
+                        <option value="Ciputat">Ciputat</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Jabatan di BEM/BPH</label>
+                    <input type="text" id="newJabatan" placeholder="Contoh: Ketua Divisi / Anggota">
+                </div>
+                <button onclick="handlePreAdd()" class="btn-add">+ TAMBAH KE DATABASE</button>
+            </div>
+        </div>
+
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>NIM</th>
+                            <th>Nama</th>
+                            <th>Kampus</th>
+                            <th>Jabatan</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="nimTable">
+                        <tr><td colspan="5" style="text-align:center; padding:20px;">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { listenToData } from './script.js';
+        
+        // Cek Login
+        if(window.checkSession) window.checkSession();
+
+        // 1. RENDER DATA
+        listenToData((nims, votes) => {
+            const tbody = document.getElementById('nimTable');
+            tbody.innerHTML = '';
+            
+            if (nims.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#888;">Belum ada data DPT. Silakan input data baru.</td></tr>';
+            } else {
+                nims.reverse().forEach(u => {
+                    let kampus = u.kampus || '-';
+                    let jabatan = u.jabatan || '-';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><b>${u.nim}</b></td>
+                            <td>${u.nama}</td>
+                            <td>${kampus}</td>
+                            <td>${jabatan}</td>
+                            <td><button class="btn-del" onclick="askDelete('${u.nim}')">Hapus</button></td>
+                        </tr>
+                    `;
+                });
+            }
+        });
+
+        // ============================
+        // MODAL LOGIC
+        // ============================
+        const infoModal = document.getElementById('infoModal');
+        const confirmModal = document.getElementById('confirmModal');
+        let nimToDelete = null;
+
+        // Tampilkan Info Modal
+        window.showInfo = (title, msg, type) => {
+            document.getElementById('infoTitle').innerText = title;
+            document.getElementById('infoMsg').innerText = msg;
+            document.getElementById('infoIcon').innerText = type === 'success' ? '✅' : '⚠️';
+            infoModal.classList.add('active');
+        }
+        window.closeInfoModal = () => infoModal.classList.remove('active');
+
+        // Tampilkan Confirm Delete Modal
+        window.askDelete = (nim) => {
+            nimToDelete = nim;
+            confirmModal.classList.add('active');
+        }
+        window.closeConfirmModal = () => {
+            nimToDelete = null;
+            confirmModal.classList.remove('active');
+        }
+
+        // Eksekusi Hapus saat tombol "Ya, Hapus" diklik
+        document.getElementById('btnConfirmDelete').onclick = () => {
+            if (nimToDelete && window.deleteNim) {
+                // Kita bypass fungsi confirm() bawaan script.js dengan memanggil fungsi delete langsung
+                // TAPI karena kita tidak bisa ubah script.js, kita override window.confirm sementara
+                const originalConfirm = window.confirm;
+                window.confirm = () => true; // Paksa return true
+                
+                window.deleteNim(nimToDelete);
+                
+                window.confirm = originalConfirm; // Kembalikan confirm asli
+                window.closeConfirmModal();
+                window.showInfo("Terhapus", "Data berhasil dihapus dari database.", "success");
+            }
+        };
+
+        // ============================
+        // ADD DATA LOGIC
+        // ============================
+        
+        // Override Alert untuk fungsi Add
+        window.alert = (msg) => {
+            const lowerMsg = msg.toLowerCase();
+            if (lowerMsg.includes('berhasil')) {
+                window.showInfo("Sukses", msg, "success");
+            } else {
+                window.showInfo("Perhatian", msg, "error");
+            }
+        };
+
+        window.handlePreAdd = () => {
+            const nim = document.getElementById('newNim').value.trim();
+            const nama = document.getElementById('newNama').value.trim();
+            const kampus = document.getElementById('newKampus').value;
+            const jabatan = document.getElementById('newJabatan').value.trim();
+
+            if(nim && nama && kampus && jabatan) {
+                if(window.addNim) {
+                    window.addNim(nim, nama, kampus, jabatan);
+                    
+                    // Reset Form
+                    document.getElementById('newNim').value = '';
+                    document.getElementById('newNama').value = '';
+                    document.getElementById('newJabatan').value = '';
+                    document.getElementById('newKampus').selectedIndex = 0;
+                }
+            } else { 
+                window.showInfo("Data Tidak Lengkap", "Mohon lengkapi semua kolom (NIM, Nama, Kampus, Jabatan)!", "error"); 
+            }
+        }
+    </script>
+</body>
+</html>
