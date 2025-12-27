@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* Mengatur agar container ada di tengah layar */
+        /* ============================
+           LAYOUT UTAMA
+           ============================ */
         body {
             background-color: #f0f2f5;
             display: flex;
@@ -15,20 +17,20 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-            font-family: sans-serif; /* Font default sesuai request */
+            font-family: sans-serif;
         }
 
         .vote-card {
             background: white;
             width: 100%;
-            max-width: 600px;
+            max-width: 800px; /* Diperlebar sedikit agar kartu lega */
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.08);
             overflow: hidden;
             position: relative;
         }
 
-        /* Bagian Header Biru */
+        /* HEADER */
         .header-banner {
             background: linear-gradient(135deg, #007bff, #0056b3);
             color: white;
@@ -44,10 +46,9 @@
         .header-banner h1 { margin: 10px 0 5px; font-size: 1.5rem; }
         .header-banner p { margin: 0; opacity: 0.9; font-size: 0.9rem; }
 
-        /* Area Form */
         .form-area { padding: 30px; }
 
-        /* Input NIM */
+        /* INPUT NIM */
         .input-group-lg { margin-bottom: 25px; text-align: center; }
         .input-group-lg label { display: block; margin-bottom: 8px; font-weight: bold; color: #444; }
         .input-group-lg input {
@@ -57,40 +58,96 @@
         }
         .input-group-lg input:focus { border-color: #007bff; box-shadow: 0 0 8px rgba(0,123,255,0.2); }
 
-        /* Grid Pilihan Kandidat */
+        /* GRID KANDIDAT */
         .candidates-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px;
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsif */
+            gap: 20px; 
+            margin-bottom: 30px;
         }
 
-        /* Kartu Kandidat */
-        .candidate-option { cursor: pointer; position: relative; }
-        .candidate-option input[type="radio"] { opacity: 0; position: absolute; }
+        /* ============================
+           ANIMASI FLIP CARD (3D)
+           ============================ */
+        .candidate-option {
+            cursor: pointer;
+            perspective: 1000px; /* Memberikan efek kedalaman 3D */
+            display: block;
+        }
+        
+        /* Sembunyikan Radio Button */
+        .candidate-option input[type="radio"] { display: none; }
 
-        .option-card {
-            border: 2px solid #eee; border-radius: 12px; padding: 10px;
-            text-align: center; transition: all 0.3s ease; background: #fff;
+        /* Container Kartu (Flipper) */
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 320px; /* Tinggi kartu harus ditetapkan */
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        .option-card img {
-            width: 100%; height: 150px; object-fit: cover;
-            border-radius: 8px; margin-bottom: 10px; background-color: #f8f9fa;
-        }
-        .option-card h3 { margin: 5px 0; font-size: 1.1rem; color: #333; }
-        .option-card p { margin: 0; font-size: 0.85rem; color: #777; }
 
-        /* Efek Saat Dipilih */
-        .candidate-option input[type="radio"]:checked + .option-card {
-            border-color: #28a745; background-color: #f0fff4;
-            transform: translateY(-5px); box-shadow: 0 5px 15px rgba(40, 167, 69, 0.2);
+        /* LOGIKA FLIP SAAT DIKLIK (CHECKED) */
+        .candidate-option input[type="radio"]:checked + .flip-card-inner {
+            transform: rotateY(180deg);
+            box-shadow: 0 0 15px rgba(40, 167, 69, 0.5); /* Glow Hijau */
         }
+
+        /* Sisi Depan & Belakang */
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden; /* Safari */
+            backface-visibility: hidden;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #eee;
+            background: white;
+            box-sizing: border-box;
+        }
+
+        /* STYLE DEPAN (FOTO) */
+        .flip-card-front {
+            color: black;
+        }
+        .flip-card-front img {
+            width: 100%; height: 160px; object-fit: cover;
+            border-radius: 8px; margin-bottom: 15px;
+            background-color: #f8f9fa;
+        }
+        .flip-card-front h3 { margin: 5px 0; color: #333; }
+        .flip-card-front p { font-size: 0.9rem; color: #777; }
+        .tap-hint { font-size: 0.8em; color: #aaa; margin-top: 10px; font-style: italic; }
+
+        /* STYLE BELAKANG (VISI MISI) */
+        .flip-card-back {
+            background-color: #f0fff4; /* Hijau muda */
+            color: #333;
+            transform: rotateY(180deg); /* Dibalik secara default */
+            border: 2px solid #28a745;
+        }
+        .flip-card-back h3 { color: #28a745; margin-bottom: 10px; border-bottom: 2px solid #28a745; padding-bottom: 5px; }
+        .flip-card-back p { font-size: 0.9rem; line-height: 1.5; color: #555; }
+        
+        /* Ikon Centang (Hanya muncul di belakang) */
         .check-icon {
-            position: absolute; top: 10px; right: 10px;
-            background: #28a745; color: white; border-radius: 50%; width: 24px; height: 24px;
+            margin-top: 15px;
+            background: #28a745; color: white;
+            width: 40px; height: 40px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 14px; opacity: 0; transition: 0.2s;
+            font-size: 20px; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
-        .candidate-option input[type="radio"]:checked + .option-card .check-icon { opacity: 1; }
 
-        /* Tombol Submit Besar */
+        /* TOMBOL SUBMIT */
         .btn-submit {
             width: 100%; padding: 16px;
             background: #28a745; color: white; font-size: 1.1rem; font-weight: bold;
@@ -104,9 +161,9 @@
         .footer-info a { color: #aaa; text-decoration: none; }
         .footer-info a:hover { text-decoration: underline; }
 
-        /* =========================================
-           STYLE MODAL POPUP (KEREN)
-           ========================================= */
+        /* ============================
+           MODAL POPUP
+           ============================ */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 1000;
@@ -136,10 +193,6 @@
         .modal-btn:hover { background: #0056b3; }
         .modal-btn.error { background: #dc3545; }
         .modal-btn.error:hover { background: #c82333; }
-
-        /* Animation Keyframes */
-        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
     </style>
 </head>
 <body>
@@ -157,7 +210,7 @@
         <div class="header-banner">
             <img src="logo.jpg" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2232/2232688.png'" alt="Logo">
             <h1>E-Voting Desain PDH - BEM PLJ</h1>
-            <p>Gunakan hak suara Anda dengan bijak, Jujur, dan Adil.</p>
+            <p>Klik kartu untuk melihat Visi Misi & Memilih</p>
         </div>
 
         <div class="form-area">
@@ -169,88 +222,152 @@
                     <input type="text" id="nimInput" placeholder="Contoh: 2023001" autocomplete="off" required>
                 </div>
 
-                <label style="display:block; margin-bottom:10px; font-weight:bold; color:#444; text-align:center;">Pilih Kandidat:</label>
-                
                 <div class="candidates-grid">
+
                     <label class="candidate-option">
                         <input type="radio" name="candidate" value="01">
-                        <div class="option-card">
-                            <div class="check-icon">✓</div>
-                            <img src="paslon1.jpg" onerror="this.src='https://via.placeholder.com/300x200/3498db/ffffff?text=01'">
-                            <h3>No. Urut I</h3>
-                            <p>Desain PDH Kampus Politeknik LP3I Jakarta Pusat</p>
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <img src="paslon1.jpg" onerror="this.src='https://via.placeholder.com/300x200/3498db/ffffff?text=01'">
+                                <h3>No. Urut I</h3>
+                                <p>Desain PDH Kampus Politeknik LP3I Jakarta Pusat</p>
+                                <span class="tap-hint">👆 Klik untuk pilih</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <h3>Visi & Misi</h3>
+                                <p>Mewujudkan Kampus Jakarta Pusat sebagai pusat inovasi dan kreativitas mahasiswa.</p>
+                                <div class="check-icon">✓</div>
+                                <small style="margin-top:5px; color:#28a745; font-weight:bold;">TERPILIH</small>
+                            </div>
                         </div>
                     </label>
 
                     <label class="candidate-option">
                         <input type="radio" name="candidate" value="02">
-                        <div class="option-card">
-                            <div class="check-icon">✓</div>
-                            <img src="paslon2.jpg" onerror="this.src='https://via.placeholder.com/300x200/e74c3c/ffffff?text=02'">
-                            <h3>No. Urut II</h3>
-                            <p>Desain PDH Kampus Politeknik LP3I Jakarta Utara</p>
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <img src="paslon2.jpg" onerror="this.src='https://via.placeholder.com/300x200/e74c3c/ffffff?text=02'">
+                                <h3>No. Urut II</h3>
+                                 <p>Desain PDH Kampus Politeknik LP3I Jakarta Utara</p>
+                                <span class="tap-hint">👆 Klik untuk pilih</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <h3>Visi & Misi</h3>
+                                <p>Meningkatkan solidaritas dan prestasi mahasiswa Jakarta Utara di kancah nasional.</p>
+                                <div class="check-icon">✓</div>
+                                <small style="margin-top:5px; color:#28a745; font-weight:bold;">TERPILIH</small>
+                            </div>
                         </div>
                     </label>
-                    
+
                     <label class="candidate-option">
                         <input type="radio" name="candidate" value="03">
-                        <div class="option-card">
-                            <div class="check-icon">✓</div>
-                            <img src="paslon3.jpg" onerror="this.src='https://via.placeholder.com/300x200/e74c3c/ffffff?text=03'">
-                            <h3>No. Urut III</h3>
-                            <p>Desain PDH Kampus Politeknik LP3I Jakarta Selatan</p>
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <img src="paslon3.jpg" onerror="this.src='https://via.placeholder.com/300x200/f1c40f/ffffff?text=03'">
+                                <h3>No. Urut III</h3>
+                                <p>Desain PDH Kampus Politeknik LP3I Jakarta Selatan</p>
+                                <span class="tap-hint">👆 Klik untuk pilih</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <h3>Visi & Misi</h3>
+                                <p>Membangun lingkungan kampus yang asri, disiplin, dan berteknologi tinggi.</p>
+                                <div class="check-icon">✓</div>
+                                <small style="margin-top:5px; color:#28a745; font-weight:bold;">TERPILIH</small>
+                            </div>
                         </div>
                     </label>
-                    
+
                     <label class="candidate-option">
                         <input type="radio" name="candidate" value="04">
-                        <div class="option-card">
-                            <div class="check-icon">✓</div>
-                            <img src="paslon4.jpg" onerror="this.src='https://via.placeholder.com/300x200/e74c3c/ffffff?text=04'">
-                            <h3>No. Urut IV</h3>
-                            <p>Desain PDH Kampus Politeknik LP3I Cikarang</p>
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <img src="paslon4.jpg" onerror="this.src='https://via.placeholder.com/300x200/2ecc71/ffffff?text=04'">
+                                <h3>No. Urut IV</h3>
+                                <p>Desain PDH Kampus Politeknik LP3I Cikarang</p>
+                                <span class="tap-hint">👆 Klik untuk pilih</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <h3>Visi & Misi</h3>
+                                <p>Menjadikan Cikarang sebagai basis mahasiswa industri yang kompeten.</p>
+                                <div class="check-icon">✓</div>
+                                <small style="margin-top:5px; color:#28a745; font-weight:bold;">TERPILIH</small>
+                            </div>
                         </div>
                     </label>
-                    
+
                     <label class="candidate-option">
                         <input type="radio" name="candidate" value="05">
-                        <div class="option-card">
-                            <div class="check-icon">✓</div>
-                            <img src="paslon5.jpg" onerror="this.src='https://via.placeholder.com/300x200/e74c3c/ffffff?text=05'">
-                            <h3>No. Urut V</h3>
-                            <p>Desain PDH Kampus Politeknik LP3I Bekasi</p>
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <img src="paslon5.jpg" onerror="this.src='https://via.placeholder.com/300x200/9b59b6/ffffff?text=05'">
+                                <h3>No. Urut V</h3>
+                                 <p>Desain PDH Kampus Politeknik LP3I Bekasi</p>
+                                <span class="tap-hint">👆 Klik untuk pilih</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <h3>Visi & Misi</h3>
+                                <p>Sinergi mahasiswa Bekasi untuk kemajuan bersama dan pengabdian masyarakat.</p>
+                                <div class="check-icon">✓</div>
+                                <small style="margin-top:5px; color:#28a745; font-weight:bold;">TERPILIH</small>
+                            </div>
                         </div>
                     </label>
-                    
+
                     <label class="candidate-option">
                         <input type="radio" name="candidate" value="06">
-                        <div class="option-card">
-                            <div class="check-icon">✓</div>
-                            <img src="paslon6.jpg" onerror="this.src='https://via.placeholder.com/300x200/e74c3c/ffffff?text=06'">
-                            <h3>No. Urut VI</h3>
-                            <p>Desain PDH Kampus Politeknik LP3I Depok</p>
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <img src="paslon6.jpg" onerror="this.src='https://via.placeholder.com/300x200/e67e22/ffffff?text=06'">
+                                <h3>No. Urut VI</h3>
+                                <p>Desain PDH Kampus Politeknik LP3I Depok</p>
+                                <span class="tap-hint">👆 Klik untuk pilih</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <h3>Visi & Misi</h3>
+                                <p>Menciptakan mahasiswa Depok yang kritis, aktif, dan solutif.</p>
+                                <div class="check-icon">✓</div>
+                                <small style="margin-top:5px; color:#28a745; font-weight:bold;">TERPILIH</small>
+                            </div>
                         </div>
                     </label>
-                    
+
                     <label class="candidate-option">
                         <input type="radio" name="candidate" value="07">
-                        <div class="option-card">
-                            <div class="check-icon">✓</div>
-                            <img src="paslon7.jpg" onerror="this.src='https://via.placeholder.com/300x200/e74c3c/ffffff?text=07'">
-                            <h3>No. Urut VII</h3>
-                            <p>Desain PDH Kampus Politeknik LP3I Cimone Tangerang</p>
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <img src="paslon7.jpg" onerror="this.src='https://via.placeholder.com/300x200/1abc9c/ffffff?text=07'">
+                                <h3>No. Urut VII</h3>
+                                <p>Desain PDH Kampus Politeknik LP3I Cimone Tangerang</p>
+                                <span class="tap-hint">👆 Klik untuk pilih</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <h3>Visi & Misi</h3>
+                                <p>Unggul dalam prestasi akademik dan non-akademik di wilayah Tangerang.</p>
+                                <div class="check-icon">✓</div>
+                                <small style="margin-top:5px; color:#28a745; font-weight:bold;">TERPILIH</small>
+                            </div>
                         </div>
                     </label>
-                    
+
                     <label class="candidate-option">
                         <input type="radio" name="candidate" value="08">
-                        <div class="option-card">
-                            <div class="check-icon">✓</div>
-                            <img src="paslon8.jpg" onerror="this.src='https://via.placeholder.com/300x200/e74c3c/ffffff?text=08'">
-                            <h3>No. Urut VIII</h3>
-                            <p>Desain PDH Kampus Politeknik LP3I Ciputat Tangerang</p>
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <img src="paslon8.jpg" onerror="this.src='https://via.placeholder.com/300x200/34495e/ffffff?text=08'">
+                                <h3>No. Urut VIII</h3>
+                                <p>Desain PDH Kampus Politeknik LP3I Ciputat Tangerang</p>
+                                <span class="tap-hint">👆 Klik untuk pilih</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <h3>Visi & Misi</h3>
+                                <p>Menjadikan Ciputat sebagai pelopor pergerakan mahasiswa yang positif.</p>
+                                <div class="check-icon">✓</div>
+                                <small style="margin-top:5px; color:#28a745; font-weight:bold;">TERPILIH</small>
+                            </div>
                         </div>
                     </label>
+
                 </div>
 
                 <button type="submit" class="btn-submit" id="submitBtn">🔒 KONFIRMASI PILIHAN</button>
@@ -266,7 +383,7 @@
     <script type="module" src="script.js"></script>
     
     <script>
-        // --- 1. SETUP MODAL ---
+        // --- 1. MODAL LOGIC ---
         const modal = document.getElementById('customModal');
         const mTitle = document.getElementById('mTitle');
         const mMsg = document.getElementById('mMsg');
@@ -296,18 +413,15 @@
         }
 
         // --- 2. OVERRIDE ALERT ---
-        // Ini kuncinya! Kita ubah alert() bawaan browser jadi Modal Keren
         window.alert = function(msg) {
             const btn = document.getElementById('submitBtn');
             const lowerMsg = msg.toLowerCase();
-
-            // Kembalikan Tombol ke Normal
+            
             btn.innerHTML = '🔒 KONFIRMASI PILIHAN';
             btn.classList.remove('loading');
 
             if (lowerMsg.includes('sukses') || lowerMsg.includes('terima kasih')) {
                 showModal("Berhasil!", msg, 'success');
-                // Reset Form jika sukses
                 document.getElementById('nimInput').value = '';
                 document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
             } 
@@ -328,22 +442,18 @@
             const selected = document.querySelector('input[name="candidate"]:checked');
             const btn = document.getElementById('submitBtn');
 
-            // Validasi: Cek NIM Kosong
             if (!nimVal) {
                 showModal("Data Kurang", "Harap masukkan NIM Anda terlebih dahulu!", 'error');
                 return;
             }
-            // Validasi: Cek Pilihan Kosong
             if (!selected) {
-                showModal("Data Kurang", "Harap pilih salah satu kandidat!", 'error');
+                showModal("Data Kurang", "Harap klik salah satu kartu kandidat untuk memilih!", 'error');
                 return;
             }
 
-            // Jika valid, ubah tombol jadi Loading
             btn.innerHTML = '⏳ Memproses...';
             btn.classList.add('loading');
 
-            // Kirim ke Firebase (lewat window.submitVote di script.js)
             if (window.submitVote) {
                 window.submitVote(nimVal, selected.value);
             } else {
