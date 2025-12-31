@@ -79,11 +79,39 @@ window.addNim = (nim, nama, kampus, jabatan) => {
     });
 };
 
+// --- FUNGSI HAPUS NIM (UPDATE: OTOMATIS KURANGI SUARA) ---
 window.deleteNim = (nim) => {
-    if(confirm(`Hapus NIM ${nim}?`)) {
-        set(ref(db, 'nims/' + nim), null);
+    if(confirm(`Yakin hapus data NIM ${nim}? Jika dia sudah memilih, suaranya akan dibatalkan.`)) {
+        
+        const userRef = ref(db, 'nims/' + nim);
+        
+        // 1. Cek dulu datanya sebelum dihapus
+        get(userRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
+
+                // 2. Jika dia sudah vote, kurangi suara kandidat yang dipilih
+                if (userData.voted && userData.pilihan) {
+                    const voteRef = ref(db, `votes/${userData.pilihan}/count`);
+                    
+                    get(voteRef).then((voteSnap) => {
+                        let currentCount = voteSnap.val() || 0;
+                        if (currentCount > 0) {
+                            set(voteRef, currentCount - 1); // Kurangi 1
+                        }
+                    });
+                }
+
+                // 3. Hapus data user dari database
+                set(userRef, null);
+                alert("Data berhasil dihapus & suara disesuaikan.");
+            } else {
+                alert("Data tidak ditemukan.");
+            }
+        });
     }
 };
+
 
 window.submitVote = (nimInput, candidateCode) => {
     const userRef = ref(db, 'nims/' + nimInput);
