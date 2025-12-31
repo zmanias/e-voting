@@ -176,7 +176,7 @@
         <div class="page-header">
             <div class="header-title">
                 <h2>📋 Kelola Data DPT</h2>
-                <p>Tambah Manual atau Import Excel (.xlsx)</p>
+                <p>Tambah Manual atau Import Excel (Multi-Sheet)</p>
             </div>
             <a href="admin-dashboard.html" class="btn-back">⬅ Kembali ke Dashboard</a>
         </div>
@@ -187,7 +187,7 @@
                 <span class="import-label">📂 Import Massal dari Excel</span>
                 <p style="font-size:0.85rem; color:#666; margin-bottom:15px;">
                     Format Kolom: <b>NO | NAMA | KAMPUS | JABATAN | NIM</b><br>
-                    (NIM yang sama tidak akan ditimpa)
+                    (Mendukung banyak sheet/halaman sekaligus)
                 </p>
                 <label for="excelInput" class="btn-select-file">Pilih File Excel (.xlsx)</label>
                 <input type="file" id="excelInput" class="file-input" accept=".xlsx, .xls" onchange="handleFileSelect(this)">
@@ -250,13 +250,12 @@
     </div>
 
     <script type="module">
-        // Import Firebase SDK dari script.js atau CDN langsung di sini agar bisa akses DB
+        // Import Firebase SDK
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, get, child, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { listenToData } from './script.js';
 
-        // Konfigurasi ulang disini untuk fungsi import khusus (agar tidak ganggu script.js)
-        // Pastikan config ini sama dengan script.js
+        // Konfigurasi Firebase (Harus sama dengan script.js)
         const firebaseConfig = {
             apiKey: "AIzaSyDbcPdFbHbOMTJQ5zYzV5ICuoVLg0cczW0",
             authDomain: "database-987bf.firebaseapp.com",
@@ -273,7 +272,7 @@
         // Cek Session
         if(window.checkSession) window.checkSession();
 
-        // 1. RENDER DATA (Menggunakan listener dari script.js)
+        // 1. RENDER DATA
         listenToData((nims, votes) => {
             const tbody = document.getElementById('nimTable');
             tbody.innerHTML = '';
@@ -323,7 +322,6 @@
 
         document.getElementById('btnConfirmDelete').onclick = () => {
             if (nimToDelete && window.deleteNim) {
-                // Bypass confirm bawaan script.js
                 const originalConfirm = window.confirm;
                 window.confirm = () => true; 
                 window.deleteNim(nimToDelete);
@@ -335,9 +333,9 @@
         };
 
         // ============================
-        // EXCEL IMPORT LOGIC
+        // EXCEL IMPORT LOGIC (MULTI-SHEET)
         // ============================
-        let excelData = [];
+        let workbookGlobal = null;
 
         window.handleFileSelect = (input) => {
             const file = input.files[0];
@@ -348,19 +346,16 @@
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    const sheet = workbook.Sheets[sheetName];
-                    // Konversi ke JSON dengan header di baris pertama
-                    excelData = XLSX.utils.sheet_to_json(sheet);
+                    // Simpan workbook ke variabel global
+                    workbookGlobal = XLSX.read(data, { type: 'array' });
                 };
                 reader.readAsArrayBuffer(file);
             }
         }
 
         window.processImport = async () => {
-            if (excelData.length === 0) {
-                window.showInfo("Error", "Data Excel kosong atau tidak terbaca!", "error");
+            if (!workbookGlobal) {
+                window.showInfo("Error", "File Excel belum terbaca dengan benar!", "error");
                 return;
             }
 
@@ -371,61 +366,64 @@
             const dbRef = ref(db);
             let successCount = 0;
             let skipCount = 0;
+            const updates = {};
 
             try {
-                // Ambil data NIM yang sudah ada di database untuk cek duplikat
+                // Ambil data existing untuk cek duplikat
                 const snapshot = await get(child(dbRef, `nims`));
                 const existingData = snapshot.val() || {};
 
-                // Loop data excel
-                const updates = {};
-                
-                excelData.forEach(row => {
-                    // Normalisasi Key (Jaga-jaga kalau header excel beda huruf besar/kecil)
-                    // Asumsi Header Excel: NO, NAMA, KAMPUS, JABATAN, NIM
-                    
-                    // Mencari key yang cocok secara fleksibel
-                    const nimKey = Object.keys(row).find(k => k.toUpperCase().includes('NIM'));
-                    const namaKey = Object.keys(row).find(k => k.toUpperCase().includes('NAMA'));
-                    const kampusKey = Object.keys(row).find(k => k.toUpperCase().includes('KAMPUS'));
-                    const jabatanKey = Object.keys(row).find(k => k.toUpperCase().includes('JABATAN'));
+                // Loop Semua Sheet (Halaman) dalam Excel
+                workbookGlobal.SheetNames.forEach(sheetName => {
+                    const sheet = workbookGlobal.Sheets[sheetName];
+                    const excelData = XLSX.utils.sheet_to_json(sheet); // Convert sheet ini ke JSON
 
-                    if (nimKey && row[nimKey]) {
-                        const nimStr = String(row[nimKey]).trim();
-                        
-                        // Cek apakah NIM sudah ada di Database Firebase
-                        if (!existingData[nimStr]) {
-                            // Jika belum ada, masukkan ke antrian update
-                            updates['/nims/' + nimStr] = {
-                                nim: nimStr,
-                                nama: row[namaKey] || "Tanpa Nama",
-                                kampus: row[kampusKey] || "-",
-                                jabatan: row[jabatanKey] || "-",
-                                voted: false,
-                                pilihan: null
-                            };
-                            successCount++;
-                        } else {
-                            skipCount++;
+                    // Proses setiap baris dalam sheet ini
+                    excelData.forEach(row => {
+                        // Mencari key fleksibel (case-insensitive)
+                        const nimKey = Object.keys(row).find(k => k.toUpperCase().includes('NIM'));
+                        const namaKey = Object.keys(row).find(k => k.toUpperCase().includes('NAMA'));
+                        const kampusKey = Object.keys(row).find(k => k.toUpperCase().includes('KAMPUS'));
+                        const jabatanKey = Object.keys(row).find(k => k.toUpperCase().includes('JABATAN'));
+
+                        if (nimKey && row[nimKey]) {
+                            const nimStr = String(row[nimKey]).trim();
+                            
+                            // Cek Duplikat di Firebase & di antrian updates saat ini
+                            if (!existingData[nimStr] && !updates['/nims/' + nimStr]) {
+                                updates['/nims/' + nimStr] = {
+                                    nim: nimStr,
+                                    nama: row[namaKey] || "Tanpa Nama",
+                                    kampus: row[kampusKey] || "-",
+                                    jabatan: row[jabatanKey] || "-",
+                                    voted: false,
+                                    pilihan: null
+                                };
+                                successCount++;
+                            } else {
+                                skipCount++;
+                            }
                         }
-                    }
+                    });
                 });
 
+                // Eksekusi Update ke Firebase (Batch)
                 if (Object.keys(updates).length > 0) {
                     await update(ref(db), updates);
                 }
 
-                window.showInfo("Import Selesai", `Berhasil: ${successCount} data.\nDilewati (Duplikat): ${skipCount} data.`, "success");
+                window.showInfo("Import Selesai", `Total Sheet Diproses: ${workbookGlobal.SheetNames.length}\nBerhasil Masuk: ${successCount}\nDilewati (Duplikat): ${skipCount}`, "success");
 
             } catch (error) {
                 console.error(error);
-                window.showInfo("Gagal", "Terjadi kesalahan saat koneksi database.", "error");
+                window.showInfo("Gagal", "Terjadi kesalahan koneksi atau format file.", "error");
             } finally {
                 btn.innerHTML = "🚀 Mulai Import";
                 btn.disabled = false;
-                document.getElementById('excelInput').value = ""; // Reset input
+                document.getElementById('excelInput').value = ""; 
                 document.getElementById('fileNameDisplay').innerText = "";
                 document.getElementById('btnImport').style.display = 'none';
+                workbookGlobal = null; // Reset workbook
             }
         }
 
@@ -443,13 +441,11 @@
                 if(window.addNim) {
                     btn.innerHTML = "Menyimpan...";
                     
-                    // Override Alert script.js untuk satu kali ini
                     const oldAlert = window.alert;
                     window.alert = (msg) => {
                         btn.innerHTML = "+ TAMBAH KE DATABASE";
                         if (msg.toLowerCase().includes('berhasil')) {
                             window.showInfo("Sukses", msg, "success");
-                            // Reset Form
                             document.getElementById('newNim').value = '';
                             document.getElementById('newNama').value = '';
                             document.getElementById('newJabatan').value = '';
@@ -457,7 +453,7 @@
                         } else {
                             window.showInfo("Gagal", msg, "error");
                         }
-                        window.alert = oldAlert; // Balikin alert normal
+                        window.alert = oldAlert;
                     };
 
                     window.addNim(nim, nama, kampus, jabatan);
