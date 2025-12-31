@@ -65,7 +65,7 @@
         }
         .btn-select-file:hover { background: #2980b9; }
 
-        /* FORM INPUT GRID (MANUAL) */
+        /* FORM INPUT GRID */
         .form-grid {
             display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;
         }
@@ -118,18 +118,25 @@
         .modal-overlay.active { opacity: 1; visibility: visible; }
 
         .modal-box {
-            background: white; padding: 30px; width: 90%; max-width: 400px;
+            background: white; padding: 30px; width: 90%; max-width: 500px;
             border-radius: 15px; text-align: center;
             transform: scale(0.8); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; max-height: 80vh; /* Agar tidak kepanjangan */
         }
         .modal-overlay.active .modal-box { transform: scale(1); }
 
         .modal-icon { font-size: 3rem; margin-bottom: 10px; }
         .modal-title { font-size: 1.3rem; font-weight: bold; margin-bottom: 10px; color: #333; }
-        .modal-msg { font-size: 0.95rem; color: #666; margin-bottom: 25px; }
         
-        .modal-actions { display: flex; gap: 10px; justify-content: center; }
+        /* Modal Message Scrollable */
+        .modal-msg { 
+            font-size: 0.95rem; color: #666; margin-bottom: 25px; 
+            text-align: left; overflow-y: auto; padding-right: 5px;
+            flex: 1; /* Isi ruang kosong */
+        }
+        
+        .modal-actions { display: flex; gap: 10px; justify-content: center; margin-top: auto; }
 
         .btn-modal {
             flex: 1; padding: 12px; border-radius: 50px; border: none;
@@ -137,9 +144,17 @@
         }
         .btn-close { background: #e0e0e0; color: #333; }
         .btn-close:hover { background: #d6d6d6; }
-        
         .btn-confirm { background: #dc3545; color: white; }
         .btn-confirm:hover { background: #c82333; }
+
+        /* LIST ERROR DUPLIKAT */
+        .error-list {
+            background: #ffebee; border: 1px solid #ef9a9a; 
+            border-radius: 8px; padding: 10px; margin-top: 10px;
+            font-size: 0.85rem; color: #c62828;
+        }
+        .error-item { margin-bottom: 5px; border-bottom: 1px dashed #ef9a9a; padding-bottom: 2px; }
+        .error-item:last-child { border-bottom: none; }
 
         @media (max-width: 600px) {
             .form-grid { grid-template-columns: 1fr; }
@@ -153,17 +168,17 @@
     <div class="modal-overlay" id="infoModal">
         <div class="modal-box">
             <div class="modal-icon" id="infoIcon">ℹ️</div>
-            <div class="modal-title" id="infoTitle">Informasi</div>
+            <div class="modal-title" id="infoTitle">Laporan Import</div>
             <div class="modal-msg" id="infoMsg">Pesan informasi.</div>
             <button class="btn-modal btn-close" onclick="closeInfoModal()">Tutup</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="confirmModal">
-        <div class="modal-box">
+        <div class="modal-box" style="max-height: 300px;">
             <div class="modal-icon">🗑️</div>
             <div class="modal-title">Hapus Data?</div>
-            <div class="modal-msg">Tindakan ini tidak bisa dibatalkan.</div>
+            <div class="modal-msg" style="text-align: center;">Tindakan ini tidak bisa dibatalkan.</div>
             <div class="modal-actions">
                 <button class="btn-modal btn-close" onclick="closeConfirmModal()">Batal</button>
                 <button class="btn-modal btn-confirm" id="btnConfirmDelete">Ya, Hapus</button>
@@ -176,7 +191,7 @@
         <div class="page-header">
             <div class="header-title">
                 <h2>📋 Kelola Data DPT</h2>
-                <p>Tambah Manual atau Import Excel (Multi-Sheet)</p>
+                <p>Tambah Manual atau Import Excel (.xlsx)</p>
             </div>
             <a href="admin-dashboard.html" class="btn-back">⬅ Kembali ke Dashboard</a>
         </div>
@@ -184,10 +199,10 @@
         <div class="card">
             
             <div class="import-area">
-                <span class="import-label">📂 Import Massal dari Excel</span>
+                <span class="import-label">📂 Import Massal dari Excel (Multi-Sheet)</span>
                 <p style="font-size:0.85rem; color:#666; margin-bottom:15px;">
-                    Format Kolom: <b>NO | NAMA | KAMPUS | JABATAN | NIM</b><br>
-                    (Mendukung banyak sheet/halaman sekaligus)
+                    Format Header: <b>NO | NAMA | KAMPUS | JABATAN | NIM</b><br>
+                    (Sistem otomatis melewati data jika NIM sudah ada)
                 </p>
                 <label for="excelInput" class="btn-select-file">Pilih File Excel (.xlsx)</label>
                 <input type="file" id="excelInput" class="file-input" accept=".xlsx, .xls" onchange="handleFileSelect(this)">
@@ -250,12 +265,11 @@
     </div>
 
     <script type="module">
-        // Import Firebase SDK
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, get, child, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { listenToData } from './script.js';
 
-        // Konfigurasi Firebase (Harus sama dengan script.js)
+        // KONFIGURASI FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyDbcPdFbHbOMTJQ5zYzV5ICuoVLg0cczW0",
             authDomain: "database-987bf.firebaseapp.com",
@@ -269,7 +283,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Cek Session
         if(window.checkSession) window.checkSession();
 
         // 1. RENDER DATA
@@ -297,15 +310,16 @@
         });
 
         // ============================
-        // MODAL LOGIC
+        // MODAL LOGIC (UPDATED WITH HTML SUPPORT)
         // ============================
         const infoModal = document.getElementById('infoModal');
         const confirmModal = document.getElementById('confirmModal');
         let nimToDelete = null;
 
+        // Mendukung HTML di pesan (untuk list error)
         window.showInfo = (title, msg, type) => {
             document.getElementById('infoTitle').innerText = title;
-            document.getElementById('infoMsg').innerText = msg;
+            document.getElementById('infoMsg').innerHTML = msg; // PENTING: innerHTML agar list terbaca
             document.getElementById('infoIcon').innerText = type === 'success' ? '✅' : '⚠️';
             infoModal.classList.add('active');
         }
@@ -326,14 +340,13 @@
                 window.confirm = () => true; 
                 window.deleteNim(nimToDelete);
                 window.confirm = originalConfirm; 
-                
                 window.closeConfirmModal();
                 window.showInfo("Terhapus", "Data berhasil dihapus.", "success");
             }
         };
 
         // ============================
-        // EXCEL IMPORT LOGIC (MULTI-SHEET)
+        // EXCEL IMPORT LOGIC (WITH DUPLICATE LOG)
         // ============================
         let workbookGlobal = null;
 
@@ -346,7 +359,6 @@
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const data = new Uint8Array(e.target.result);
-                    // Simpan workbook ke variabel global
                     workbookGlobal = XLSX.read(data, { type: 'array' });
                 };
                 reader.readAsArrayBuffer(file);
@@ -355,7 +367,7 @@
 
         window.processImport = async () => {
             if (!workbookGlobal) {
-                window.showInfo("Error", "File Excel belum terbaca dengan benar!", "error");
+                window.showInfo("Error", "File Excel belum terbaca!", "error");
                 return;
             }
 
@@ -367,20 +379,20 @@
             let successCount = 0;
             let skipCount = 0;
             const updates = {};
+            
+            // Array untuk menyimpan detail duplikat
+            let skippedLog = [];
 
             try {
-                // Ambil data existing untuk cek duplikat
+                // Ambil data existing
                 const snapshot = await get(child(dbRef, `nims`));
                 const existingData = snapshot.val() || {};
 
-                // Loop Semua Sheet (Halaman) dalam Excel
                 workbookGlobal.SheetNames.forEach(sheetName => {
                     const sheet = workbookGlobal.Sheets[sheetName];
-                    const excelData = XLSX.utils.sheet_to_json(sheet); // Convert sheet ini ke JSON
+                    const excelData = XLSX.utils.sheet_to_json(sheet);
 
-                    // Proses setiap baris dalam sheet ini
                     excelData.forEach(row => {
-                        // Mencari key fleksibel (case-insensitive)
                         const nimKey = Object.keys(row).find(k => k.toUpperCase().includes('NIM'));
                         const namaKey = Object.keys(row).find(k => k.toUpperCase().includes('NAMA'));
                         const kampusKey = Object.keys(row).find(k => k.toUpperCase().includes('KAMPUS'));
@@ -388,12 +400,13 @@
 
                         if (nimKey && row[nimKey]) {
                             const nimStr = String(row[nimKey]).trim();
+                            const namaStr = row[namaKey] || "Tanpa Nama";
                             
-                            // Cek Duplikat di Firebase & di antrian updates saat ini
+                            // Cek Duplikat
                             if (!existingData[nimStr] && !updates['/nims/' + nimStr]) {
                                 updates['/nims/' + nimStr] = {
                                     nim: nimStr,
-                                    nama: row[namaKey] || "Tanpa Nama",
+                                    nama: namaStr,
                                     kampus: row[kampusKey] || "-",
                                     jabatan: row[jabatanKey] || "-",
                                     voted: false,
@@ -402,17 +415,30 @@
                                 successCount++;
                             } else {
                                 skipCount++;
+                                // Catat siapa yang di-skip
+                                skippedLog.push(`<b>${nimStr}</b> - ${namaStr}`);
                             }
                         }
                     });
                 });
 
-                // Eksekusi Update ke Firebase (Batch)
                 if (Object.keys(updates).length > 0) {
                     await update(ref(db), updates);
                 }
 
-                window.showInfo("Import Selesai", `Total Sheet Diproses: ${workbookGlobal.SheetNames.length}\nBerhasil Masuk: ${successCount}\nDilewati (Duplikat): ${skipCount}`, "success");
+                // SUSUN PESAN LAPORAN
+                let reportMsg = `<p><b>Hasil Import:</b></p>
+                                 <p style="color:green;">✅ Berhasil Masuk: ${successCount} data</p>
+                                 <p style="color:red;">⛔ Dilewati (Duplikat): ${skipCount} data</p>`;
+                
+                if (skipCount > 0) {
+                    reportMsg += `<div class="error-list">
+                                    <p style="margin:0 0 5px 0; font-weight:bold;">Daftar Duplikat:</p>
+                                    ${skippedLog.map(item => `<div class="error-item">${item}</div>`).join('')}
+                                  </div>`;
+                }
+
+                window.showInfo("Import Selesai", reportMsg, successCount > 0 ? "success" : "error");
 
             } catch (error) {
                 console.error(error);
@@ -423,7 +449,7 @@
                 document.getElementById('excelInput').value = ""; 
                 document.getElementById('fileNameDisplay').innerText = "";
                 document.getElementById('btnImport').style.display = 'none';
-                workbookGlobal = null; // Reset workbook
+                workbookGlobal = null;
             }
         }
 
