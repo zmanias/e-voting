@@ -39,13 +39,15 @@
         }
         .btn-back:hover { background: #bbdefb; }
 
-        /* CARD STYLE */
-        .card {
+        /* INPUT FORM CARD */
+        .input-card {
             background: white; padding: 30px; border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 40px;
+            border-top: 5px solid #2ecc71;
         }
+        .input-card h3 { margin-top: 0; margin-bottom: 20px; color: #2ecc71; }
 
-        /* FORM INPUT GRID */
+        /* FORM GRID */
         .form-grid {
             display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
         }
@@ -69,16 +71,35 @@
             box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
         }
         .btn-add:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4); }
-        .btn-add:active { transform: translateY(0); }
+
+        /* KATEGORI KAMPUS STYLE */
+        .campus-section {
+            background: white; border-radius: 15px; margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03); overflow: hidden;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .campus-header {
+            background: #34495e; color: white; padding: 15px 25px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .campus-name { font-size: 1.1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .campus-count { 
+            background: rgba(255,255,255,0.2); padding: 5px 12px; 
+            border-radius: 20px; font-size: 0.85rem; font-weight: bold; 
+        }
 
         /* TABLE STYLE */
-        .table-responsive { overflow-x: auto; border-radius: 10px; border: 1px solid #eee; }
-        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
         
-        thead { background: #2c3e50; color: white; }
-        th, td { padding: 15px; text-align: left; font-size: 0.9rem; border-bottom: 1px solid #eee; }
-        th { text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
-        tr:hover { background: #f8f9fa; }
+        th, td { padding: 12px 15px; text-align: left; font-size: 0.9rem; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; color: #555; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; font-weight: 700; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background: #f1f2f6; }
+
+        /* Styling Nomor Urut */
+        .col-no { text-align: center; color: #888; font-weight: bold; width: 50px; }
 
         .btn-del {
             background: #ffebee; color: #c62828; border: none;
@@ -87,9 +108,7 @@
         }
         .btn-del:hover { background: #c62828; color: white; }
 
-        /* ========================
-           MODAL POPUP STYLE
-           ======================== */
+        /* MODAL STYLE */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 1000;
@@ -110,7 +129,6 @@
         .modal-icon { font-size: 3rem; margin-bottom: 10px; }
         .modal-title { font-size: 1.3rem; font-weight: bold; margin-bottom: 10px; color: #333; }
         .modal-msg { font-size: 0.95rem; color: #666; margin-bottom: 25px; }
-        
         .modal-actions { display: flex; gap: 10px; justify-content: center; }
 
         .btn-modal {
@@ -119,9 +137,11 @@
         }
         .btn-close { background: #e0e0e0; color: #333; }
         .btn-close:hover { background: #d6d6d6; }
-        
         .btn-confirm { background: #dc3545; color: white; }
         .btn-confirm:hover { background: #c82333; }
+
+        /* Animation */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* RESPONSIVE */
         @media (max-width: 600px) {
@@ -146,7 +166,7 @@
         <div class="modal-box">
             <div class="modal-icon">🗑️</div>
             <div class="modal-title">Hapus Data?</div>
-            <div class="modal-msg">Apakah Anda yakin ingin menghapus data pemilih ini? Tindakan ini tidak bisa dibatalkan.</div>
+            <div class="modal-msg">Yakin ingin menghapus data ini?</div>
             <div class="modal-actions">
                 <button class="btn-modal btn-close" onclick="closeConfirmModal()">Batal</button>
                 <button class="btn-modal btn-confirm" id="btnConfirmDelete">Ya, Hapus</button>
@@ -159,12 +179,13 @@
         <div class="page-header">
             <div class="header-title">
                 <h2>📋 Input Data Pemilih</h2>
-                <p>Tambah atau hapus Daftar Pemilih Tetap (DPT)</p>
+                <p>Tambah & Kelola Daftar Pemilih Tetap (DPT)</p>
             </div>
             <a href="admin-dashboard.html" class="btn-back">⬅ Kembali ke Dashboard</a>
         </div>
 
-        <div class="card">
+        <div class="input-card">
+            <h3>📝 Tambah Data Baru</h3>
             <div class="form-grid">
                 <div class="form-group">
                     <label>Nomor Induk (NIM)</label>
@@ -192,60 +213,107 @@
                     <label>Jabatan di BEM/BPH</label>
                     <input type="text" id="newJabatan" placeholder="Contoh: Ketua Divisi / Anggota">
                 </div>
-                <button onclick="handlePreAdd()" class="btn-add">+ TAMBAH KE DATABASE</button>
+                <button onclick="handlePreAdd()" class="btn-add">+ SIMPAN KE DATABASE</button>
             </div>
         </div>
 
-        <div class="card" style="padding: 0; overflow: hidden;">
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>NIM</th>
-                            <th>Nama</th>
-                            <th>Kampus</th>
-                            <th>Jabatan</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="nimTable">
-                        <tr><td colspan="5" style="text-align:center; padding:20px;">Memuat data...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+        <div id="campusListContainer">
+            <p style="text-align:center; color:#888;">Memuat data...</p>
         </div>
 
     </div>
 
     <script type="module">
         import { listenToData } from './script.js';
-        
-        // Cek Login
         if(window.checkSession) window.checkSession();
 
-        // 1. RENDER DATA
-        listenToData((nims, votes) => {
-            const tbody = document.getElementById('nimTable');
-            tbody.innerHTML = '';
-            
-            if (nims.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#888;">Belum ada data DPT. Silakan input data baru.</td></tr>';
-            } else {
-                nims.reverse().forEach(u => {
-                    let kampus = u.kampus || '-';
-                    let jabatan = u.jabatan || '-';
+        // DAFTAR KAMPUS UNTUK URUTAN TAMPILAN
+        const campusOrder = [
+            'Jakarta Pusat', 
+            'Jakarta Utara', 
+            'Jakarta Selatan', 
+            'Cikarang', 
+            'Bekasi', 
+            'Depok', 
+            'Cimone', 
+            'Ciputat'
+        ];
 
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><b>${u.nim}</b></td>
-                            <td>${u.nama}</td>
-                            <td>${kampus}</td>
-                            <td>${jabatan}</td>
-                            <td><button class="btn-del" onclick="askDelete('${u.nim}')">Hapus</button></td>
-                        </tr>
-                    `;
-                });
+        // 1. RENDER DATA BERDASARKAN KATEGORI KAMPUS
+        listenToData((nims, votes) => {
+            const container = document.getElementById('campusListContainer');
+            container.innerHTML = ''; // Bersihkan kontainer
+
+            if (nims.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:40px; color:#999; background:white; border-radius:15px;">Belum ada data DPT. Silakan input data baru.</div>';
+                return;
             }
+
+            // Grouping data
+            const groupedData = {};
+            campusOrder.forEach(c => groupedData[c] = []); // Inisialisasi array per kampus
+            groupedData['Lainnya'] = []; // Untuk data yang kampusnya tidak sesuai list
+
+            nims.forEach(u => {
+                const kampusName = u.kampus || 'Lainnya';
+                if (groupedData.hasOwnProperty(kampusName)) {
+                    groupedData[kampusName].push(u);
+                } else {
+                    groupedData['Lainnya'].push(u);
+                }
+            });
+
+            // Loop untuk membuat HTML per kampus
+            [...campusOrder, 'Lainnya'].forEach(campusName => {
+                const students = groupedData[campusName];
+                
+                // Hanya tampilkan jika ada mahasiswa di kampus tersebut
+                if (students.length > 0) {
+                    let rowsHTML = '';
+                    
+                    // Render baris tabel dengan Nomor Urut
+                    // Kita pakai [...students].reverse() agar yang baru masuk ada di atas, tapi nomor tetap 1,2,3
+                    [...students].reverse().forEach((u, index) => {
+                        rowsHTML += `
+                            <tr>
+                                <td class="col-no">${index + 1}</td>
+                                <td><b>${u.nim}</b></td>
+                                <td>${u.nama}</td>
+                                <td>${u.jabatan || '-'}</td>
+                                <td><button class="btn-del" onclick="askDelete('${u.nim}')">Hapus</button></td>
+                            </tr>
+                        `;
+                    });
+
+                    // Buat Card HTML
+                    const sectionHTML = `
+                        <div class="campus-section">
+                            <div class="campus-header">
+                                <div class="campus-name">🏢 ${campusName}</div>
+                                <div class="campus-count">${students.length} Mahasiswa</div>
+                            </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th width="5%" style="text-align:center;">No.</th>
+                                            <th width="20%">NIM</th>
+                                            <th width="30%">Nama</th>
+                                            <th width="30%">Jabatan</th>
+                                            <th width="15%">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${rowsHTML}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.innerHTML += sectionHTML;
+                }
+            });
         });
 
         // ============================
@@ -255,7 +323,6 @@
         const confirmModal = document.getElementById('confirmModal');
         let nimToDelete = null;
 
-        // Tampilkan Info Modal
         window.showInfo = (title, msg, type) => {
             document.getElementById('infoTitle').innerText = title;
             document.getElementById('infoMsg').innerText = msg;
@@ -264,7 +331,6 @@
         }
         window.closeInfoModal = () => infoModal.classList.remove('active');
 
-        // Tampilkan Confirm Delete Modal
         window.askDelete = (nim) => {
             nimToDelete = nim;
             confirmModal.classList.add('active');
@@ -274,27 +340,20 @@
             confirmModal.classList.remove('active');
         }
 
-        // Eksekusi Hapus saat tombol "Ya, Hapus" diklik
         document.getElementById('btnConfirmDelete').onclick = () => {
             if (nimToDelete && window.deleteNim) {
-                // Kita bypass fungsi confirm() bawaan script.js dengan memanggil fungsi delete langsung
-                // TAPI karena kita tidak bisa ubah script.js, kita override window.confirm sementara
                 const originalConfirm = window.confirm;
-                window.confirm = () => true; // Paksa return true
-                
+                window.confirm = () => true; 
                 window.deleteNim(nimToDelete);
-                
-                window.confirm = originalConfirm; // Kembalikan confirm asli
+                window.confirm = originalConfirm; 
                 window.closeConfirmModal();
-                window.showInfo("Terhapus", "Data berhasil dihapus dari database.", "success");
+                window.showInfo("Terhapus", "Data berhasil dihapus.", "success");
             }
         };
 
         // ============================
-        // ADD DATA LOGIC
+        // ADD LOGIC
         // ============================
-        
-        // Override Alert untuk fungsi Add
         window.alert = (msg) => {
             const lowerMsg = msg.toLowerCase();
             if (lowerMsg.includes('berhasil')) {
@@ -313,15 +372,13 @@
             if(nim && nama && kampus && jabatan) {
                 if(window.addNim) {
                     window.addNim(nim, nama, kampus, jabatan);
-                    
-                    // Reset Form
                     document.getElementById('newNim').value = '';
                     document.getElementById('newNama').value = '';
                     document.getElementById('newJabatan').value = '';
                     document.getElementById('newKampus').selectedIndex = 0;
                 }
             } else { 
-                window.showInfo("Data Tidak Lengkap", "Mohon lengkapi semua kolom (NIM, Nama, Kampus, Jabatan)!", "error"); 
+                window.showInfo("Data Tidak Lengkap", "Mohon lengkapi semua kolom!", "error"); 
             }
         }
     </script>
