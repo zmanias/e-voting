@@ -4,365 +4,403 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Voting Mahasiswa - Desain PDH</title>
+    
     <style>
-        /* Mengatur agar container ada di tengah layar */
+        :root {
+            --primary: #007bff;
+            --success: #28a745;
+            --bg-color: #f4f6f8;
+            --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+        }
+
         body {
-            background-color: #f0f2f5;
+            background-color: var(--bg-color);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             padding: 20px;
-            font-family: sans-serif;
+            margin: 0;
+            color: #333;
         }
 
-        .vote-card {
-            background: white;
+        .container {
             width: 100%;
-            max-width: 700px; /* Sedikit diperlebar agar tombol drive muat */
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            max-width: 800px; /* Lebar maksimal agar enak dibaca di desktop */
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
             overflow: hidden;
-            position: relative;
         }
 
-        /* Bagian Header Biru */
-        .header-banner {
-            background: linear-gradient(135deg, #007bff, #0056b3);
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, #0d6efd, #0a58ca);
             color: white;
-            padding: 30px 20px;
+            padding: 40px 20px;
             text-align: center;
         }
-        .header-banner img {
+        .header img {
             width: 80px; height: 80px;
             background: white; border-radius: 50%; padding: 5px;
-            object-fit: contain; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            margin-bottom: 10px;
+            object-fit: contain; margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        .header-banner h1 { margin: 10px 0 5px; font-size: 1.5rem; }
-        .header-banner p { margin: 0; opacity: 0.9; font-size: 0.9rem; }
+        .header h1 { margin: 0 0 10px; font-size: 1.5rem; font-weight: 700; }
+        .header p { margin: 0; opacity: 0.9; font-size: 0.95rem; line-height: 1.5; }
 
-        /* Area Form */
+        /* FORM AREA */
         .form-area { padding: 30px; }
 
-        /* Input NIM */
-        .input-group-lg { margin-bottom: 25px; text-align: center; }
-        .input-group-lg label { display: block; margin-bottom: 8px; font-weight: bold; color: #444; }
-        .input-group-lg input {
-            width: 100%; padding: 15px; font-size: 1.2rem; text-align: center;
-            border: 2px solid #ddd; border-radius: 10px; letter-spacing: 2px;
-            transition: all 0.3s; outline: none; box-sizing: border-box;
+        /* INPUT NIM */
+        .input-group { margin-bottom: 30px; }
+        .input-group label {
+            display: block; text-align: center; margin-bottom: 10px;
+            font-weight: 600; color: #555;
         }
-        .input-group-lg input:focus { border-color: #007bff; box-shadow: 0 0 8px rgba(0,123,255,0.2); }
+        .input-group input {
+            width: 100%; padding: 15px; font-size: 1.1rem; text-align: center;
+            border: 2px solid #e2e8f0; border-radius: 12px;
+            outline: none; transition: 0.3s; box-sizing: border-box;
+            background: #f8fafc; color: #333;
+        }
+        .input-group input:focus {
+            border-color: var(--primary); background: white;
+            box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+        }
 
-        /* Grid Pilihan Kandidat */
+        /* GRID RESPONSIF KEREN */
         .candidates-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px;
-        }
-        @media (max-width: 500px) {
-            .candidates-grid { grid-template-columns: 1fr; }
+            display: grid;
+            /* Magic Line: Mengatur kolom otomatis. Min 160px, sisa ruang dibagi rata */
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+            gap: 15px;
+            margin-bottom: 30px;
         }
 
-        /* Kartu Kandidat */
-        .candidate-option { cursor: pointer; position: relative; display: block; }
-        .candidate-option input[type="radio"] { opacity: 0; position: absolute; }
+        /* CARD STYLE */
+        .candidate-item { position: relative; cursor: pointer; }
+        .candidate-item input { position: absolute; opacity: 0; cursor: pointer; }
 
-        .option-card {
-            border: 2px solid #eee; border-radius: 12px; padding: 20px 15px;
-            text-align: center; transition: all 0.3s ease; background: #fff;
-            height: 100%; display: flex; flex-direction: column; justify-content: space-between;
+        .card-box {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.2s ease-in-out;
+            height: 100%; /* Penting agar tinggi sama */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
         }
-        
-        /* Style Judul & Deskripsi */
-        .option-card h3 { margin: 10px 0 5px; font-size: 1.1rem; color: #333; }
-        .option-card p { margin: 0 0 15px 0; font-size: 0.85rem; color: #777; flex-grow: 1;}
 
-        /* Style Tombol Drive Baru */
-        .btn-drive {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 100%; padding: 10px;
-            background-color: #e8f0fe; color: #1967d2;
-            text-decoration: none; font-weight: bold; font-size: 0.9rem;
-            border-radius: 8px; border: 1px solid #d2e3fc;
-            transition: 0.2s; margin-bottom: 5px;
+        /* Hover Effect */
+        .candidate-item:hover .card-box {
+            border-color: #cbd5e1;
+            transform: translateY(-2px);
         }
-        .btn-drive:hover { background-color: #d2e3fc; text-decoration: none; }
-        .btn-drive span { margin-right: 8px; font-size: 1.2rem; }
 
-        /* Efek Saat Dipilih */
-        .candidate-option input[type="radio"]:checked + .option-card {
-            border-color: #28a745; background-color: #f0fff4;
-            transform: translateY(-5px); box-shadow: 0 5px 15px rgba(40, 167, 69, 0.2);
+        /* Selected State */
+        .candidate-item input:checked + .card-box {
+            border-color: var(--success);
+            background-color: #f0fdf4; /* Hijau sangat muda */
+            box-shadow: 0 0 0 2px var(--success);
+            transform: translateY(-4px);
         }
-        
-        .check-icon {
-            position: absolute; top: 10px; right: 10px;
-            background: #28a745; color: white; border-radius: 50%; width: 24px; height: 24px;
+
+        /* Card Content */
+        .card-header { margin-bottom: 10px; }
+        .number-badge {
+            display: inline-block;
+            background: #e2e8f0; color: #475569;
+            font-size: 0.75rem; font-weight: bold;
+            padding: 4px 10px; border-radius: 20px; margin-bottom: 8px;
+        }
+        .candidate-item input:checked + .card-box .number-badge {
+            background: var(--success); color: white;
+        }
+
+        .campus-name {
+            font-weight: 700; color: #1e293b; font-size: 1rem; line-height: 1.3;
+            margin-bottom: 15px; flex-grow: 1; /* Mendorong tombol ke bawah */
+        }
+
+        /* Check Icon (Hidden by default) */
+        .check-mark {
+            position: absolute; top: -10px; right: -10px;
+            background: var(--success); color: white;
+            width: 28px; height: 28px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 14px; opacity: 0; transition: 0.2s; z-index: 2;
+            font-size: 14px; opacity: 0; transform: scale(0);
+            transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10; border: 2px solid white;
         }
-        .candidate-option input[type="radio"]:checked + .option-card .check-icon { opacity: 1; }
+        .candidate-item input:checked + .card-box .check-mark {
+            opacity: 1; transform: scale(1);
+        }
 
-        /* Tombol Submit Besar */
+        /* Tombol Drive */
+        .btn-drive {
+            display: block; width: 100%;
+            background: #eff6ff; color: #1d4ed8;
+            padding: 10px 0; border-radius: 8px;
+            text-decoration: none; font-size: 0.85rem; font-weight: 600;
+            border: 1px solid #dbeafe; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn-drive:hover { background: #dbeafe; border-color: #bfdbfe; }
+        .btn-drive svg { width: 16px; height: 16px; }
+
+        /* SUBMIT BUTTON */
         .btn-submit {
-            width: 100%; padding: 16px;
-            background: #28a745; color: white; font-size: 1.1rem; font-weight: bold;
-            border: none; border-radius: 10px; cursor: pointer;
-            transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%; padding: 18px;
+            background: var(--success); color: white;
+            font-size: 1.1rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
+            border: none; border-radius: 12px; cursor: pointer;
+            box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);
+            transition: 0.3s;
         }
-        .btn-submit:hover { background: #218838; transform: translateY(-2px); }
-        .btn-submit.loading { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-submit:hover { background: #218838; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4); }
+        .btn-submit:active { transform: translateY(0); }
+        .btn-submit.loading { background: #94a3b8; cursor: wait; transform: none; box-shadow: none; }
 
-        .footer-info { text-align: center; margin-top: 20px; font-size: 0.8rem; color: #aaa; }
-        .footer-info a { color: #aaa; text-decoration: none; }
-        .footer-info a:hover { text-decoration: underline; }
+        /* FOOTER */
+        .footer { margin-top: 25px; text-align: center; color: #94a3b8; font-size: 0.8rem; }
+        .footer a { color: #64748b; text-decoration: none; }
 
-        /* MODAL STYLE (Sama seperti sebelumnya) */
+        /* MODAL (Tetap sama, hanya dirapikan dikit) */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); z-index: 1000;
-            display: flex; justify-content: center; align-items: center;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+            z-index: 9999; display: flex; justify-content: center; align-items: center;
             opacity: 0; visibility: hidden; transition: 0.3s;
-            backdrop-filter: blur(4px);
         }
         .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal-box {
-            background: white; padding: 30px; width: 90%; max-width: 400px;
-            border-radius: 15px; text-align: center;
-            transform: scale(0.8); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            background: white; width: 90%; max-width: 350px; padding: 30px;
+            border-radius: 20px; text-align: center;
+            transform: scale(0.9); transition: 0.3s;
         }
         .modal-overlay.active .modal-box { transform: scale(1); }
-        .modal-icon { font-size: 4rem; margin-bottom: 10px; }
-        .modal-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; color: #333; }
-        .modal-msg { font-size: 1rem; color: #666; margin-bottom: 25px; line-height: 1.5; }
         .modal-btn {
-            background: #007bff; color: white; border: none; padding: 12px 30px;
-            border-radius: 50px; font-weight: bold; font-size: 1rem; cursor: pointer;
-            transition: 0.2s; width: 100%;
+            background: #0f172a; color: white; border: none; padding: 12px;
+            width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px;
         }
-        .modal-btn:hover { background: #0056b3; }
-        .modal-btn.error { background: #dc3545; }
     </style>
 </head>
 <body>
 
-    <div class="modal-overlay" id="customModal">
-        <div class="modal-box">
-            <div class="modal-icon" id="mIcon">🎉</div>
-            <div class="modal-title" id="mTitle">Sukses!</div>
-            <div class="modal-msg" id="mMsg">Pesan akan muncul di sini.</div>
-            <button class="modal-btn" onclick="closeModal()">Tutup</button>
-        </div>
-    </div>
-
-    <div class="vote-card">
-        <div class="header-banner">
-            <img src="logo.jpg" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2232/2232688.png'" alt="Logo">
-            <h1>E-Voting Desain PDH - BEM PLJ</h1>
-            <p>Klik tombol "Lihat Desain" untuk melihat detail di Google Drive.</p>
+    <div class="container">
+        <div class="header">
+            <img src="logo.jpg" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2232/2232688.png'" alt="Logo Kampus">
+            <h1>E-Voting PDH</h1>
+            <p>Pilih desain terbaik untuk identitas kita.<br>Klik tombol biru untuk melihat detail di Drive.</p>
         </div>
 
         <div class="form-area">
-            
             <form onsubmit="event.preventDefault(); handleVote();">
                 
-                <div class="input-group-lg">
-                    <label>Masukkan NIM / ID Pemilih</label>
-                    <input type="text" id="nimInput" placeholder="Contoh: 2023001" autocomplete="off" required>
+                <div class="input-group">
+                    <label>Nomor Induk Mahasiswa (NIM)</label>
+                    <input type="tel" id="nimInput" placeholder="Ketik NIM Anda..." autocomplete="off" required>
                 </div>
 
-                <label style="display:block; margin-bottom:15px; font-weight:bold; color:#444; text-align:center;">
-                    Pilih Kandidat Favoritmu:
-                </label>
-                
                 <div class="candidates-grid">
                     
-                    <label class="candidate-option">
+                    <label class="candidate-item">
                         <input type="radio" name="candidate" value="01">
-                        <div class="option-card">
-                            <div class="check-icon">✓</div>
-                            <h3>No. Urut I</h3>
-                            <p>Politeknik LP3I<br>Jakarta Pusat</p>
+                        <div class="card-box">
+                            <div class="check-mark">✓</div>
+                            <div class="card-content">
+                                <span class="number-badge">No. 01</span>
+                                <div class="campus-name">Politeknik LP3I<br>Jakarta Pusat</div>
+                            </div>
                             <a href="https://drive.google.com/drive/folders/1hCYSWs0yHRq6AqD8y4IvFNEgJ0Ln9Yos" target="_blank" class="btn-drive" onclick="event.stopPropagation()">
-                                <span>📁</span> Lihat Desain
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 21a3 3 0 003-3v-4.5a3 3 0 00-3-3h-15a3 3 0 00-3 3V18a3 3 0 003 3h15zM1.5 10.146V6a3 3 0 013-3h5.379a2.25 2.25 0 011.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 013 3v1.146A4.483 4.483 0 0019.5 9h-15a4.483 4.483 0 00-3 1.146z" /></svg>
+                                Lihat Drive
                             </a>
                         </div>
                     </label>
 
-                    <label class="candidate-option">
+                    <label class="candidate-item">
                         <input type="radio" name="candidate" value="02">
-                        <div class="option-card">
-                            <div class="check-icon">✓</div>
-                            <h3>No. Urut II</h3>
-                            <p>Politeknik LP3I<br>Jakarta Utara</p>
+                        <div class="card-box">
+                            <div class="check-mark">✓</div>
+                            <div class="card-content">
+                                <span class="number-badge">No. 02</span>
+                                <div class="campus-name">Politeknik LP3I<br>Jakarta Utara</div>
+                            </div>
                             <a href="https://drive.google.com/drive/folders/1TqRK4B9UO0HEXnQs_oAi0V_VMbmbTu2i" target="_blank" class="btn-drive" onclick="event.stopPropagation()">
-                                <span>📁</span> Lihat Desain
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 21a3 3 0 003-3v-4.5a3 3 0 00-3-3h-15a3 3 0 00-3 3V18a3 3 0 003 3h15zM1.5 10.146V6a3 3 0 013-3h5.379a2.25 2.25 0 011.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 013 3v1.146A4.483 4.483 0 0019.5 9h-15a4.483 4.483 0 00-3 1.146z" /></svg>
+                                Lihat Drive
                             </a>
                         </div>
                     </label>
-                    
-                    <label class="candidate-option">
+
+                    <label class="candidate-item">
                         <input type="radio" name="candidate" value="03">
-                        <div class="option-card">
-                            <div class="check-icon">✓</div>
-                            <h3>No. Urut III</h3>
-                            <p>Politeknik LP3I<br>Jakarta Selatan</p>
+                        <div class="card-box">
+                            <div class="check-mark">✓</div>
+                            <div class="card-content">
+                                <span class="number-badge">No. 03</span>
+                                <div class="campus-name">Politeknik LP3I<br>Jakarta Selatan</div>
+                            </div>
                             <a href="https://drive.google.com/drive/folders/1A2TOnfA_7tri_cI5hO7uDuWTPXKBYfbk" target="_blank" class="btn-drive" onclick="event.stopPropagation()">
-                                <span>📁</span> Lihat Desain
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 21a3 3 0 003-3v-4.5a3 3 0 00-3-3h-15a3 3 0 00-3 3V18a3 3 0 003 3h15zM1.5 10.146V6a3 3 0 013-3h5.379a2.25 2.25 0 011.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 013 3v1.146A4.483 4.483 0 0019.5 9h-15a4.483 4.483 0 00-3 1.146z" /></svg>
+                                Lihat Drive
                             </a>
                         </div>
                     </label>
-                    
-                    <label class="candidate-option">
+
+                    <label class="candidate-item">
                         <input type="radio" name="candidate" value="04">
-                        <div class="option-card">
-                            <div class="check-icon">✓</div>
-                            <h3>No. Urut IV</h3>
-                            <p>Politeknik LP3I<br>Cikarang</p>
+                        <div class="card-box">
+                            <div class="check-mark">✓</div>
+                            <div class="card-content">
+                                <span class="number-badge">No. 04</span>
+                                <div class="campus-name">Politeknik LP3I<br>Cikarang</div>
+                            </div>
                             <a href="https://drive.google.com/drive/folders/1Wsxt4K0fiMAJErDkRXGKGW0y0lB2cK9B" target="_blank" class="btn-drive" onclick="event.stopPropagation()">
-                                <span>📁</span> Lihat Desain
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 21a3 3 0 003-3v-4.5a3 3 0 00-3-3h-15a3 3 0 00-3 3V18a3 3 0 003 3h15zM1.5 10.146V6a3 3 0 013-3h5.379a2.25 2.25 0 011.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 013 3v1.146A4.483 4.483 0 0019.5 9h-15a4.483 4.483 0 00-3 1.146z" /></svg>
+                                Lihat Drive
                             </a>
                         </div>
                     </label>
-                    
-                    <label class="candidate-option">
+
+                    <label class="candidate-item">
                         <input type="radio" name="candidate" value="05">
-                        <div class="option-card">
-                            <div class="check-icon">✓</div>
-                            <h3>No. Urut V</h3>
-                            <p>Politeknik LP3I<br>Bekasi</p>
+                        <div class="card-box">
+                            <div class="check-mark">✓</div>
+                            <div class="card-content">
+                                <span class="number-badge">No. 05</span>
+                                <div class="campus-name">Politeknik LP3I<br>Bekasi</div>
+                            </div>
                             <a href="https://drive.google.com/drive/folders/1wDEDKFYFSSPhSVpBozldbDNsJDYtHFG9" target="_blank" class="btn-drive" onclick="event.stopPropagation()">
-                                <span>📁</span> Lihat Desain
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 21a3 3 0 003-3v-4.5a3 3 0 00-3-3h-15a3 3 0 00-3 3V18a3 3 0 003 3h15zM1.5 10.146V6a3 3 0 013-3h5.379a2.25 2.25 0 011.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 013 3v1.146A4.483 4.483 0 0019.5 9h-15a4.483 4.483 0 00-3 1.146z" /></svg>
+                                Lihat Drive
                             </a>
                         </div>
                     </label>
-                    
-                    <label class="candidate-option">
+
+                    <label class="candidate-item">
                         <input type="radio" name="candidate" value="06">
-                        <div class="option-card">
-                            <div class="check-icon">✓</div>
-                            <h3>No. Urut VI</h3>
-                            <p>Politeknik LP3I<br>Depok</p>
+                        <div class="card-box">
+                            <div class="check-mark">✓</div>
+                            <div class="card-content">
+                                <span class="number-badge">No. 06</span>
+                                <div class="campus-name">Politeknik LP3I<br>Depok</div>
+                            </div>
                             <a href="https://drive.google.com/drive/folders/1APa3PsnBzZsOvm-vfB9EKSXWMSexHwqm" target="_blank" class="btn-drive" onclick="event.stopPropagation()">
-                                <span>📁</span> Lihat Desain
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 21a3 3 0 003-3v-4.5a3 3 0 00-3-3h-15a3 3 0 00-3 3V18a3 3 0 003 3h15zM1.5 10.146V6a3 3 0 013-3h5.379a2.25 2.25 0 011.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 013 3v1.146A4.483 4.483 0 0019.5 9h-15a4.483 4.483 0 00-3 1.146z" /></svg>
+                                Lihat Drive
                             </a>
                         </div>
                     </label>
-                    
-                    <label class="candidate-option">
+
+                    <label class="candidate-item">
                         <input type="radio" name="candidate" value="07">
-                        <div class="option-card">
-                            <div class="check-icon">✓</div>
-                            <h3>No. Urut VII</h3>
-                            <p>Politeknik LP3I<br>Cimone Tangerang</p>
+                        <div class="card-box">
+                            <div class="check-mark">✓</div>
+                            <div class="card-content">
+                                <span class="number-badge">No. 07</span>
+                                <div class="campus-name">Politeknik LP3I<br>Cimone Tangerang</div>
+                            </div>
                             <a href="https://drive.google.com/drive/folders/1BP8kPMzsp_Rw-HixRp-C4YkrqGeQO4ax" target="_blank" class="btn-drive" onclick="event.stopPropagation()">
-                                <span>📁</span> Lihat Desain
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 21a3 3 0 003-3v-4.5a3 3 0 00-3-3h-15a3 3 0 00-3 3V18a3 3 0 003 3h15zM1.5 10.146V6a3 3 0 013-3h5.379a2.25 2.25 0 011.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 013 3v1.146A4.483 4.483 0 0019.5 9h-15a4.483 4.483 0 00-3 1.146z" /></svg>
+                                Lihat Drive
                             </a>
                         </div>
                     </label>
-                    
-                    <label class="candidate-option">
+
+                    <label class="candidate-item">
                         <input type="radio" name="candidate" value="08">
-                        <div class="option-card">
-                            <div class="check-icon">✓</div>
-                            <h3>No. Urut VIII</h3>
-                            <p>Politeknik LP3I<br>Ciputat Tangerang</p>
+                        <div class="card-box">
+                            <div class="check-mark">✓</div>
+                            <div class="card-content">
+                                <span class="number-badge">No. 08</span>
+                                <div class="campus-name">Politeknik LP3I<br>Ciputat Tangerang</div>
+                            </div>
                             <a href="https://drive.google.com/drive/folders/1lUFsS69hX0a5Qt_6IT_ut0ZEdtLTM_TC" target="_blank" class="btn-drive" onclick="event.stopPropagation()">
-                                <span>📁</span> Lihat Desain
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 21a3 3 0 003-3v-4.5a3 3 0 00-3-3h-15a3 3 0 00-3 3V18a3 3 0 003 3h15zM1.5 10.146V6a3 3 0 013-3h5.379a2.25 2.25 0 011.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 013 3v1.146A4.483 4.483 0 0019.5 9h-15a4.483 4.483 0 00-3 1.146z" /></svg>
+                                Lihat Drive
                             </a>
                         </div>
                     </label>
+
                 </div>
 
-                <button type="submit" class="btn-submit" id="submitBtn">🔒 KONFIRMASI PILIHAN</button>
+                <button type="submit" class="btn-submit" id="submitBtn">🔒 KIRIM SUARA SAYA</button>
             </form>
 
-            <div class="footer-info">
-                <p>&copy; E-Voting Desain PDH - BEM PLJ Periode 2025/2026</p>
-                <a href="admin-dashboard.html">Login Admin</a>
+            <div class="footer">
+                <p>&copy; 2025 BEM PLJ - E-Voting System <br> <a href="admin-dashboard.html">Login Admin</a></p>
             </div>
         </div>
     </div>
 
+    <div class="modal-overlay" id="customModal">
+        <div class="modal-box">
+            <h2 id="mTitle" style="margin:0 0 10px;">Judul</h2>
+            <p id="mMsg" style="color:#666; margin:0;">Pesan</p>
+            <button class="modal-btn" onclick="closeModal()">Tutup</button>
+        </div>
+    </div>
+
     <script type="module" src="script.js"></script>
-    
     <script>
-        // --- SCRIPT MODAL & LOGIKA (TETAP SAMA) ---
+        // --- LOGIKA JAVASCRIPT ---
         
+        // 1. Modal Control
         const modal = document.getElementById('customModal');
         const mTitle = document.getElementById('mTitle');
         const mMsg = document.getElementById('mMsg');
-        const mIcon = document.getElementById('mIcon');
         const mBtn = document.querySelector('.modal-btn');
 
-        function showModal(title, message, type) {
+        function showModal(title, msg, isSuccess) {
             mTitle.innerText = title;
-            mMsg.innerText = message;
-            
-            if (type === 'success') {
-                mIcon.innerText = '🎉';
-                mTitle.style.color = '#28a745';
-                mBtn.className = 'modal-btn';
-                mBtn.innerText = 'Tutup';
-            } else {
-                mIcon.innerText = '⚠️';
-                mTitle.style.color = '#dc3545';
-                mBtn.className = 'modal-btn error';
-                mBtn.innerText = 'Coba Lagi';
-            }
+            mMsg.innerText = msg;
+            mTitle.style.color = isSuccess ? '#28a745' : '#dc3545';
+            mBtn.style.background = isSuccess ? '#28a745' : '#dc3545';
             modal.classList.add('active');
         }
 
-        function closeModal() {
-            modal.classList.remove('active');
-        }
+        function closeModal() { modal.classList.remove('active'); }
 
+        // 2. Override Alert
         window.alert = function(msg) {
             const btn = document.getElementById('submitBtn');
-            const lowerMsg = msg.toLowerCase();
-
-            btn.innerHTML = '🔒 KONFIRMASI PILIHAN';
+            btn.innerHTML = '🔒 KIRIM SUARA SAYA';
             btn.classList.remove('loading');
-
-            if (lowerMsg.includes('sukses') || lowerMsg.includes('terima kasih')) {
-                showModal("Berhasil!", msg, 'success');
+            
+            const lower = msg.toLowerCase();
+            if (lower.includes('sukses') || lower.includes('terima')) {
+                showModal('Berhasil!', msg, true);
                 document.getElementById('nimInput').value = '';
                 document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
-            } 
-            else if (lowerMsg.includes('sudah memilih')) {
-                showModal("Akses Ditolak", msg, 'error');
-            } 
-            else if (lowerMsg.includes('tidak terdaftar') || lowerMsg.includes('salah')) {
-                showModal("Gagal", msg, 'error');
-            } 
-            else {
-                showModal("Informasi", msg, 'error');
+            } else {
+                showModal('Perhatian', msg, false);
             }
         };
 
+        // 3. Handle Vote
         function handleVote() {
             const nimVal = document.getElementById('nimInput').value.trim();
             const selected = document.querySelector('input[name="candidate"]:checked');
+            
+            if(!nimVal) return showModal('Ups!', 'Isi NIM dulu ya.', false);
+            if(!selected) return showModal('Ups!', 'Pilih salah satu kandidat.', false);
+
             const btn = document.getElementById('submitBtn');
-
-            if (!nimVal) {
-                showModal("Data Kurang", "Harap masukkan NIM Anda terlebih dahulu!", 'error');
-                return;
-            }
-            if (!selected) {
-                showModal("Data Kurang", "Harap pilih salah satu kandidat!", 'error');
-                return;
-            }
-
-            btn.innerHTML = '⏳ Memproses...';
+            btn.innerHTML = '⏳ Mengirim...';
             btn.classList.add('loading');
 
-            if (window.submitVote) {
+            if(window.submitVote) {
                 window.submitVote(nimVal, selected.value);
             } else {
-                showModal("Error", "Sistem belum siap. Refresh halaman.", 'error');
-                btn.classList.remove('loading');
+                alert("Script database belum termuat. Refresh halaman.");
             }
         }
     </script>
