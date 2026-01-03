@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Voting Mahasiswa</title>
-    <link rel="stylesheet" href="style.css">
-    
+    <title>E-Voting Mahasiswa - Desain PDH</title>
     <style>
         /* Mengatur agar container ada di tengah layar */
         body {
@@ -15,13 +13,13 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-            font-family: sans-serif; /* Font default sesuai request */
+            font-family: sans-serif;
         }
 
         .vote-card {
             background: white;
             width: 100%;
-            max-width: 600px;
+            max-width: 700px; /* Sedikit diperlebar agar tombol drive muat */
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.08);
             overflow: hidden;
@@ -53,7 +51,7 @@
         .input-group-lg input {
             width: 100%; padding: 15px; font-size: 1.2rem; text-align: center;
             border: 2px solid #ddd; border-radius: 10px; letter-spacing: 2px;
-            transition: all 0.3s; outline: none;
+            transition: all 0.3s; outline: none; box-sizing: border-box;
         }
         .input-group-lg input:focus { border-color: #007bff; box-shadow: 0 0 8px rgba(0,123,255,0.2); }
 
@@ -61,32 +59,47 @@
         .candidates-grid {
             display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px;
         }
+        @media (max-width: 500px) {
+            .candidates-grid { grid-template-columns: 1fr; }
+        }
 
         /* Kartu Kandidat */
-        .candidate-option { cursor: pointer; position: relative; }
+        .candidate-option { cursor: pointer; position: relative; display: block; }
         .candidate-option input[type="radio"] { opacity: 0; position: absolute; }
 
         .option-card {
-            border: 2px solid #eee; border-radius: 12px; padding: 10px;
+            border: 2px solid #eee; border-radius: 12px; padding: 20px 15px;
             text-align: center; transition: all 0.3s ease; background: #fff;
+            height: 100%; display: flex; flex-direction: column; justify-content: space-between;
         }
-        .option-card img {
-            width: 100%; height: 150px; object-fit: cover;
-            border-radius: 8px; margin-bottom: 10px; background-color: #f8f9fa;
+        
+        /* Style Judul & Deskripsi */
+        .option-card h3 { margin: 10px 0 5px; font-size: 1.1rem; color: #333; }
+        .option-card p { margin: 0 0 15px 0; font-size: 0.85rem; color: #777; flex-grow: 1;}
+
+        /* Style Tombol Drive Baru */
+        .btn-drive {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 100%; padding: 10px;
+            background-color: #e8f0fe; color: #1967d2;
+            text-decoration: none; font-weight: bold; font-size: 0.9rem;
+            border-radius: 8px; border: 1px solid #d2e3fc;
+            transition: 0.2s; margin-bottom: 5px;
         }
-        .option-card h3 { margin: 5px 0; font-size: 1.1rem; color: #333; }
-        .option-card p { margin: 0; font-size: 0.85rem; color: #777; }
+        .btn-drive:hover { background-color: #d2e3fc; text-decoration: none; }
+        .btn-drive span { margin-right: 8px; font-size: 1.2rem; }
 
         /* Efek Saat Dipilih */
         .candidate-option input[type="radio"]:checked + .option-card {
             border-color: #28a745; background-color: #f0fff4;
             transform: translateY(-5px); box-shadow: 0 5px 15px rgba(40, 167, 69, 0.2);
         }
+        
         .check-icon {
             position: absolute; top: 10px; right: 10px;
             background: #28a745; color: white; border-radius: 50%; width: 24px; height: 24px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 14px; opacity: 0; transition: 0.2s;
+            font-size: 14px; opacity: 0; transition: 0.2s; z-index: 2;
         }
         .candidate-option input[type="radio"]:checked + .option-card .check-icon { opacity: 1; }
 
@@ -104,9 +117,7 @@
         .footer-info a { color: #aaa; text-decoration: none; }
         .footer-info a:hover { text-decoration: underline; }
 
-        /* =========================================
-           STYLE MODAL POPUP (KEREN)
-           ========================================= */
+        /* MODAL STYLE (Sama seperti sebelumnya) */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 1000;
@@ -115,7 +126,6 @@
             backdrop-filter: blur(4px);
         }
         .modal-overlay.active { opacity: 1; visibility: visible; }
-
         .modal-box {
             background: white; padding: 30px; width: 90%; max-width: 400px;
             border-radius: 15px; text-align: center;
@@ -123,11 +133,9 @@
             box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
         .modal-overlay.active .modal-box { transform: scale(1); }
-
         .modal-icon { font-size: 4rem; margin-bottom: 10px; }
         .modal-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; color: #333; }
         .modal-msg { font-size: 1rem; color: #666; margin-bottom: 25px; line-height: 1.5; }
-        
         .modal-btn {
             background: #007bff; color: white; border: none; padding: 12px 30px;
             border-radius: 50px; font-weight: bold; font-size: 1rem; cursor: pointer;
@@ -135,11 +143,6 @@
         }
         .modal-btn:hover { background: #0056b3; }
         .modal-btn.error { background: #dc3545; }
-        .modal-btn.error:hover { background: #c82333; }
-
-        /* Animation Keyframes */
-        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
     </style>
 </head>
 <body>
@@ -157,7 +160,7 @@
         <div class="header-banner">
             <img src="logo.jpg" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2232/2232688.png'" alt="Logo">
             <h1>E-Voting Desain PDH - BEM PLJ</h1>
-            <p>Gunakan hak suara Anda dengan bijak, Jujur, dan Adil.</p>
+            <p>Klik tombol "Lihat Desain" untuk melihat detail di Google Drive.</p>
         </div>
 
         <div class="form-area">
@@ -169,16 +172,21 @@
                     <input type="text" id="nimInput" placeholder="Contoh: 2023001" autocomplete="off" required>
                 </div>
 
-                <label style="display:block; margin-bottom:10px; font-weight:bold; color:#444; text-align:center;">Pilih Kandidat:</label>
+                <label style="display:block; margin-bottom:15px; font-weight:bold; color:#444; text-align:center;">
+                    Pilih Kandidat Favoritmu:
+                </label>
                 
                 <div class="candidates-grid">
+                    
                     <label class="candidate-option">
                         <input type="radio" name="candidate" value="01">
                         <div class="option-card">
                             <div class="check-icon">✓</div>
-                            <img src="paslon1.jpg" onerror="this.src='https://via.placeholder.com/300x200/3498db/ffffff?text=01'">
                             <h3>No. Urut I</h3>
-                            <p>Desain PDH Kampus Politeknik LP3I Jakarta Pusat</p>
+                            <p>Politeknik LP3I<br>Jakarta Pusat</p>
+                            <a href="https://drive.google.com/drive/folders/1hCYSWs0yHRq6AqD8y4IvFNEgJ0Ln9Yos" target="_blank" class="btn-drive" onclick="event.stopPropagation()">
+                                <span>📁</span> Lihat Desain
+                            </a>
                         </div>
                     </label>
 
@@ -186,9 +194,11 @@
                         <input type="radio" name="candidate" value="02">
                         <div class="option-card">
                             <div class="check-icon">✓</div>
-                            <img src="paslon2.jpg" onerror="this.src='https://via.placeholder.com/300x200/e74c3c/ffffff?text=02'">
                             <h3>No. Urut II</h3>
-                            <p>Desain PDH Kampus Politeknik LP3I Jakarta Utara</p>
+                            <p>Politeknik LP3I<br>Jakarta Utara</p>
+                            <a href="https://drive.google.com/drive/folders/1TqRK4B9UO0HEXnQs_oAi0V_VMbmbTu2i" target="_blank" class="btn-drive" onclick="event.stopPropagation()">
+                                <span>📁</span> Lihat Desain
+                            </a>
                         </div>
                     </label>
                     
@@ -196,9 +206,11 @@
                         <input type="radio" name="candidate" value="03">
                         <div class="option-card">
                             <div class="check-icon">✓</div>
-                            <img src="paslon3.jpg" onerror="this.src='https://via.placeholder.com/300x200/e74c3c/ffffff?text=03'">
                             <h3>No. Urut III</h3>
-                            <p>Desain PDH Kampus Politeknik LP3I Jakarta Selatan</p>
+                            <p>Politeknik LP3I<br>Jakarta Selatan</p>
+                            <a href="https://drive.google.com/drive/folders/1A2TOnfA_7tri_cI5hO7uDuWTPXKBYfbk" target="_blank" class="btn-drive" onclick="event.stopPropagation()">
+                                <span>📁</span> Lihat Desain
+                            </a>
                         </div>
                     </label>
                     
@@ -206,9 +218,11 @@
                         <input type="radio" name="candidate" value="04">
                         <div class="option-card">
                             <div class="check-icon">✓</div>
-                            <img src="paslon4.jpg" onerror="this.src='https://via.placeholder.com/300x200/e74c3c/ffffff?text=04'">
                             <h3>No. Urut IV</h3>
-                            <p>Desain PDH Kampus Politeknik LP3I Cikarang</p>
+                            <p>Politeknik LP3I<br>Cikarang</p>
+                            <a href="https://drive.google.com/drive/folders/1Wsxt4K0fiMAJErDkRXGKGW0y0lB2cK9B" target="_blank" class="btn-drive" onclick="event.stopPropagation()">
+                                <span>📁</span> Lihat Desain
+                            </a>
                         </div>
                     </label>
                     
@@ -216,9 +230,11 @@
                         <input type="radio" name="candidate" value="05">
                         <div class="option-card">
                             <div class="check-icon">✓</div>
-                            <img src="paslon5.jpg" onerror="this.src='https://via.placeholder.com/300x200/e74c3c/ffffff?text=05'">
                             <h3>No. Urut V</h3>
-                            <p>Desain PDH Kampus Politeknik LP3I Bekasi</p>
+                            <p>Politeknik LP3I<br>Bekasi</p>
+                            <a href="https://drive.google.com/drive/folders/1wDEDKFYFSSPhSVpBozldbDNsJDYtHFG9" target="_blank" class="btn-drive" onclick="event.stopPropagation()">
+                                <span>📁</span> Lihat Desain
+                            </a>
                         </div>
                     </label>
                     
@@ -226,9 +242,11 @@
                         <input type="radio" name="candidate" value="06">
                         <div class="option-card">
                             <div class="check-icon">✓</div>
-                            <img src="paslon6.jpg" onerror="this.src='https://via.placeholder.com/300x200/e74c3c/ffffff?text=06'">
                             <h3>No. Urut VI</h3>
-                            <p>Desain PDH Kampus Politeknik LP3I Depok</p>
+                            <p>Politeknik LP3I<br>Depok</p>
+                            <a href="https://drive.google.com/drive/folders/1APa3PsnBzZsOvm-vfB9EKSXWMSexHwqm" target="_blank" class="btn-drive" onclick="event.stopPropagation()">
+                                <span>📁</span> Lihat Desain
+                            </a>
                         </div>
                     </label>
                     
@@ -236,9 +254,11 @@
                         <input type="radio" name="candidate" value="07">
                         <div class="option-card">
                             <div class="check-icon">✓</div>
-                            <img src="paslon7.jpg" onerror="this.src='https://via.placeholder.com/300x200/e74c3c/ffffff?text=07'">
                             <h3>No. Urut VII</h3>
-                            <p>Desain PDH Kampus Politeknik LP3I Cimone Tangerang</p>
+                            <p>Politeknik LP3I<br>Cimone Tangerang</p>
+                            <a href="https://drive.google.com/drive/folders/1BP8kPMzsp_Rw-HixRp-C4YkrqGeQO4ax" target="_blank" class="btn-drive" onclick="event.stopPropagation()">
+                                <span>📁</span> Lihat Desain
+                            </a>
                         </div>
                     </label>
                     
@@ -246,9 +266,11 @@
                         <input type="radio" name="candidate" value="08">
                         <div class="option-card">
                             <div class="check-icon">✓</div>
-                            <img src="paslon8.jpg" onerror="this.src='https://via.placeholder.com/300x200/e74c3c/ffffff?text=08'">
                             <h3>No. Urut VIII</h3>
-                            <p>Desain PDH Kampus Politeknik LP3I Ciputat Tangerang</p>
+                            <p>Politeknik LP3I<br>Ciputat Tangerang</p>
+                            <a href="https://drive.google.com/drive/folders/1lUFsS69hX0a5Qt_6IT_ut0ZEdtLTM_TC" target="_blank" class="btn-drive" onclick="event.stopPropagation()">
+                                <span>📁</span> Lihat Desain
+                            </a>
                         </div>
                     </label>
                 </div>
@@ -266,7 +288,8 @@
     <script type="module" src="script.js"></script>
     
     <script>
-        // --- 1. SETUP MODAL ---
+        // --- SCRIPT MODAL & LOGIKA (TETAP SAMA) ---
+        
         const modal = document.getElementById('customModal');
         const mTitle = document.getElementById('mTitle');
         const mMsg = document.getElementById('mMsg');
@@ -295,19 +318,15 @@
             modal.classList.remove('active');
         }
 
-        // --- 2. OVERRIDE ALERT ---
-        // Ini kuncinya! Kita ubah alert() bawaan browser jadi Modal Keren
         window.alert = function(msg) {
             const btn = document.getElementById('submitBtn');
             const lowerMsg = msg.toLowerCase();
 
-            // Kembalikan Tombol ke Normal
             btn.innerHTML = '🔒 KONFIRMASI PILIHAN';
             btn.classList.remove('loading');
 
             if (lowerMsg.includes('sukses') || lowerMsg.includes('terima kasih')) {
                 showModal("Berhasil!", msg, 'success');
-                // Reset Form jika sukses
                 document.getElementById('nimInput').value = '';
                 document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
             } 
@@ -322,28 +341,23 @@
             }
         };
 
-        // --- 3. HANDLE VOTE ---
         function handleVote() {
             const nimVal = document.getElementById('nimInput').value.trim();
             const selected = document.querySelector('input[name="candidate"]:checked');
             const btn = document.getElementById('submitBtn');
 
-            // Validasi: Cek NIM Kosong
             if (!nimVal) {
                 showModal("Data Kurang", "Harap masukkan NIM Anda terlebih dahulu!", 'error');
                 return;
             }
-            // Validasi: Cek Pilihan Kosong
             if (!selected) {
                 showModal("Data Kurang", "Harap pilih salah satu kandidat!", 'error');
                 return;
             }
 
-            // Jika valid, ubah tombol jadi Loading
             btn.innerHTML = '⏳ Memproses...';
             btn.classList.add('loading');
 
-            // Kirim ke Firebase (lewat window.submitVote di script.js)
             if (window.submitVote) {
                 window.submitVote(nimVal, selected.value);
             } else {
