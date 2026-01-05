@@ -102,10 +102,10 @@
         }
 
         /* Tabel */
-        .table-wrapper { overflow-x: auto; border-radius: 10px; border: 1px solid #eee; }
+        .table-wrapper { overflow-x: auto; border-radius: 10px; border: 1px solid #eee; max-height: 500px; overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 700px; }
         
-        thead { background: #2c3e50; color: white; }
+        thead { background: #2c3e50; color: white; position: sticky; top: 0; z-index: 10; }
         th, td { padding: 15px; text-align: left; font-size: 0.9rem; }
         tr:nth-child(even) { background: #f8f9fa; }
         tr:hover { background: #f1f2f6; }
@@ -115,6 +115,7 @@
             font-size: 0.8rem; font-weight: bold;
         }
         .badge-vote { background: #e3f2fd; color: #1976d2; }
+        .badge-pending { background: #ffebee; color: #c62828; }
 
         /* Tombol Reset */
         .btn-reset {
@@ -176,7 +177,7 @@
         
         <div class="section-card">
             <div class="section-title">
-                <span>📋 Log Aktivitas Pemilih (Open Vote)</span>
+                <span>📋 Log Aktivitas Pemilih (Suara Masuk)</span>
             </div>
             <div class="table-wrapper">
                 <table>
@@ -191,6 +192,28 @@
                     </thead>
                     <tbody id="logTable">
                         <tr><td colspan="5" style="text-align:center; padding:20px;">Menunggu data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section-card" style="border-top: 5px solid #e74c3c;">
+            <div class="section-title">
+                <span style="color: #c0392b;">⚠️ Daftar Belum Memilih (Golput)</span>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>NIM</th>
+                            <th>Nama Mahasiswa</th>
+                            <th>Kampus</th>
+                            <th>Jabatan</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="unvotedTable">
+                        <tr><td colspan="5" style="text-align:center; padding:20px;">Memuat data...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -217,25 +240,26 @@
             animateValue("totalVoted", parseInt(document.getElementById('totalVoted').innerText), votedCount, 1000);
             animateValue("totalGolput", parseInt(document.getElementById('totalGolput').innerText), total - votedCount, 1000);
 
-            // 2. Render Grafik
+            // 2. Render Grafik (Dengan Decimal)
             const container = document.getElementById('candidates-container');
             let htmlGrafik = '';
             let totalSuaraSah = 0;
             
-            // Hitung total suara sah untuk persentase
+            // Hitung total suara sah
             for(let key in votes) { totalSuaraSah += votes[key].count; }
 
             for (let i = 1; i <= 8; i++) {
                 let code = i < 10 ? "0" + i : "" + i;
                 let data = votes[code] || { count: 0, name: "No. Urut " + (i==1?"I":i==2?"II":i==3?"III":i==4?"IV":i==5?"V":i==6?"VI":i==7?"VII":"VIII") };
                 
-                let persentase = totalSuaraSah === 0 ? 0 : Math.round((data.count / totalSuaraSah) * 100);
+                // UPDATE: Menggunakan toFixed(2) untuk 2 angka desimal
+                let persentase = totalSuaraSah === 0 ? 0 : ((data.count / totalSuaraSah) * 100).toFixed(2);
                 
                 htmlGrafik += `
                 <div class="candidate-item">
                     <div class="candidate-info">
                         <span>${data.name}</span>
-                        <span>${data.count} Suara</span>
+                        <span>${data.count} Suara (${persentase}%)</span>
                     </div>
                     <div class="progress-bg">
                         <div class="progress-bar" style="width:${persentase}%; background:${getColor(i)}">
@@ -246,7 +270,7 @@
             }
             container.innerHTML = htmlGrafik;
 
-            // 3. Render Tabel Log
+            // 3. Render Tabel Log (Sudah Memilih)
             const tbody = document.getElementById('logTable');
             const userVoted = nims.filter(u => u.voted);
             
@@ -269,6 +293,29 @@
                         </tr>`;
                 });
             }
+
+            // 4. Render Tabel Belum Memilih (NEW)
+            const unvotedBody = document.getElementById('unvotedTable');
+            const userUnvoted = nims.filter(u => !u.voted);
+
+            if(userUnvoted.length === 0) {
+                unvotedBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#2ecc71;">🎉 Semua DPT sudah menggunakan hak suaranya!</td></tr>';
+            } else {
+                unvotedBody.innerHTML = '';
+                userUnvoted.forEach(u => {
+                    let kampus = u.kampus || '-';
+                    let jabatan = u.jabatan || '-';
+
+                    unvotedBody.innerHTML += `
+                        <tr>
+                            <td><b>${u.nim}</b></td>
+                            <td>${u.nama}</td>
+                            <td>${kampus}</td>
+                            <td>${jabatan}</td>
+                            <td><span class="badge-pill badge-pending">Belum Vote</span></td>
+                        </tr>`;
+                });
+            }
         });
 
         // Helper: Warna Grafik
@@ -277,7 +324,7 @@
             return colors[i-1] || "#333";
         }
 
-        // Helper: Animasi Angka (Agar keren saat angka berubah)
+        // Helper: Animasi Angka
         function animateValue(id, start, end, duration) {
             if (start === end) return;
             const obj = document.getElementById(id);
